@@ -60,7 +60,19 @@ script. Also cross-check each SUMMARY's task→commit table against `git log`
 check become HUMAN_NEEDED with: what to test, expected result, why it needs a
 human — batched into ONE checkpoint at the end (verification fatigue is real).
 
-**Step 4 — Verdict (you).** VERIFICATION.md's verdict is `pass` ONLY when every
+**Step 4 — Verdict (you).**
+
+**Harvest before verdict (pass only).** On a pass verdict, distill the phase
+before it goes cold: sweep the phase's SUMMARY Deviations and Concerns, the
+verifier's ladder/panel reasoning in VERIFICATION.md, and any .potion/debug/
+files closed during the phase. Log what clears the 5-minute bar as ordinary
+learnings (files field pointing at the source artifact), max 5 entries —
+distillation, not transcription. Grep learnings.jsonl for existing keys
+first: harvest only what fell through during the phase, never re-log. Zero
+new entries is a valid outcome — say so explicitly. Qualifying entries then
+ride the normal promote-up bar (CORE: Cross-repo knowledge).
+
+VERIFICATION.md's verdict is `pass` ONLY when every
 truth is VERIFIED, or is HUMAN_NEEDED and the user has acknowledged it this
 cycle. STATIC_ONLY is never a final state — it is your unfinished step 3.
 

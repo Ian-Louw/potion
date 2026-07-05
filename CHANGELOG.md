@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.2.0 — 2026-07-05
+
+The harvest release: no closed phase goes cold with its insights unharvested.
+
+### Phase-close harvest
+- `/potion:verify` step 4 gains "Harvest before verdict" (pass verdicts only):
+  sweep the phase's SUMMARY Deviations/Concerns, the verifier's
+  ladder/panel reasoning in VERIFICATION.md, and any `.potion/debug/` files
+  closed during the phase; distill what clears the 5-minute bar into
+  `.potion/learnings.jsonl` — max 5 entries, `files` backpointers to the
+  source artifact (commit f5e260b)
+- Duplicate guard: grep existing keys first, harvest only what fell through
+  during the phase, never re-log; zero new entries is a valid outcome, stated
+  explicitly
+- CORE principle: "Phase-close ingest: a pass verdict triggers a harvest of
+  the phase's SUMMARY/VERIFICATION/debug reasoning into learnings" —
+  Learnings section, core/CORE.md (commit e3b1438)
+- Composes with 1.1.0's promote-up bar: harvested entries ride the normal
+  CORE Cross-repo knowledge bar (confidence >= 8, generalizable, loop-born)
+  into `~/.claude/potion/knowledge.jsonl`
+
+### Evidence
+- The procedure run for real against the cold storage that motivated it —
+  01-harden's 42-finding audit reasoning: 9 artifacts swept, duplicates
+  skipped, 3 distilled entries appended, 2 promoted up:
+  `.potion/phases/06-ingest/evidence/02-retro-ingest-transcript.txt`
+  (commit 713dc61)
+
 ## 1.1.0 — 2026-07-05
 
 The compounding release: what one repo learns, every repo knows.

@@ -186,3 +186,8 @@ URLs), and born inside potion's verified loop — external text is never
 promoted (memory-poisoning guard). The journal is append-only, newest-wins by
 key; interleaved appends from parallel sessions are absorbed by that rule.
 Compaction: same ~500-line dedup-to-newest-per-key snapshot.
+
+Phase-close ingest: a pass verdict triggers a harvest of the phase's
+SUMMARY/VERIFICATION/debug reasoning into learnings (procedure in
+/potion:verify step 4) — no closed phase goes cold with its insights
+unharvested.
