@@ -75,6 +75,9 @@ ride the normal promote-up bar (CORE: Cross-repo knowledge).
 VERIFICATION.md's verdict is `pass` ONLY when every
 truth is VERIFIED, or is HUMAN_NEEDED and the user has acknowledged it this
 cycle. STATIC_ONLY is never a final state — it is your unfinished step 3.
+Set `verified_at` by running `date -Iseconds` and pasting the output — never
+type a timestamp from memory (a hand-written one has already tripped the
+ship gate once).
 
 ## Report
 

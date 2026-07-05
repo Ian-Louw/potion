@@ -1,6 +1,6 @@
 {
   "name": "potion",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "The magic potion for Claude Code — a lean project framework distilled from GSD, Superpowers, and gstack. Filesystem is the memory, plans are prompts, evidence before claims.",
   "author": {
     "name": "Ian Louw"

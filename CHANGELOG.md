@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.4.1 — 2026-07-06
+
+The mischief release: the verifier survived its own red-team.
+
+- Mischief audit (2026-07-06): the verification protocol was red-teamed with
+  five classed, seeded defects behind a sealed answer key — clean-grepping
+  stub, wired-but-wrong, phantom commit, orphaned artifact, missing artifact.
+  Catch rate 5/5 at protocol level (4/5 at the static ladder alone); the
+  verifier also flagged the fabricated "verified live" claims unprompted.
+  Receipts: `.potion/phases/09-mischief/`.
+- verify: `verified_at` is now derived mechanically (`date -Iseconds`), never
+  hand-typed. New permanent ratchet: every SKILL.md stays under the ~150-line
+  bar (`check-skill-line-bar`).
+- docs: README caught up to the 1.x story — brewed-itself claims moved to
+  v1.4.0, new "Knowledge that compounds" section (journal → promotion →
+  pages → lint), mischief receipts cited from the built-with-itself callout.
+  Repo About updated to match. Plus v1.4.0 release bookkeeping.
+
 ## 1.4.0 — 2026-07-05
 
 The self-audit release: the knowledge layer now lints itself — cache fixes are

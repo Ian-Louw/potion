@@ -20,7 +20,8 @@ Plus utilities: `/potion:pause` · `/potion:resume` · `/potion:learn` ·
 end-to-end, stopping only at human gates.
 
 **Eleven skills. Two agents. One hook.** No ceremony. This repo's own
-`.potion/` is the live proof — potion brewed itself to 1.0.0.
+`.potion/` is the live proof — potion brewed itself to v1.4.0, then
+red-teamed its own verifier with five seeded defects. It caught all five.
 
 ## ⚡ Why
 
@@ -157,11 +158,40 @@ graph TB
 ```
 
 > **Built with itself:** this repo's [`.potion/`](.potion/) is a real Potion
-> project — the loop above brewed
-> [v1.0.0](https://github.com/Ian-Louw/potion/releases/tag/v1.0.0).
+> project — the loop above brewed every release from
+> [v1.0.0](https://github.com/Ian-Louw/potion/releases/tag/v1.0.0) through
+> [v1.4.0](https://github.com/Ian-Louw/potion/releases/tag/v1.4.0). Then the
+> mischief audit ([`.potion/phases/09-mischief/`](.potion/phases/09-mischief/))
+> red-teamed the verifier itself: five classed defects seeded behind a sealed
+> answer key — stub, wired-but-wrong, phantom commit, orphaned artifact,
+> missing artifact. Caught 5/5, and it flagged the fabricated "verified live"
+> claims unprompted.
 
 The Operator Test governs everything: *if the agent cannot prove it is done,
 you are not engineering a loop — you are automating drift.*
+
+## 🧠 Knowledge that compounds
+
+Every pass verdict harvests what the phase taught into an append-only journal —
+and the knowledge keeps working after it's written:
+
+- **Journal** — `.potion/learnings.jsonl`: append-only, newest-wins by key,
+  never hand-edited. Ground truth.
+- **Cross-repo promotion** — entries that clear the bar (confidence ≥ 8,
+  generalizable, born inside the verified loop) promote to
+  `~/.claude/potion/knowledge.jsonl`. What one repo learns, every repo knows.
+  External text never crosses the boundary — only loop-born entries do.
+- **Distillation pages** — journals distill into readable pages
+  (`.potion/knowledge/`), each claim citing the journal entry it came from.
+  Pages are a regenerable cache: when page and journal disagree, the journal
+  wins and the page gets rebuilt.
+- **Lint** — four hunts (contradictions, stale claims, orphans, coverage gaps)
+  keep journal and pages honest. The safety line: cache fixes are automatic,
+  truth changes are human-gated. Always.
+
+Planners grep both journals into plans; workers get matching entry keys in
+their spawn digest. Pitfalls with teeth promote to permanent `check` entries
+the verifier runs on every pass.
 
 ## 📦 What's in the box
 
@@ -192,6 +222,7 @@ State lives in your repo at `.potion/`:
 ├── PROJECT.md              # goals, locked decisions, out-of-scope (with why)
 ├── STATE.md                # <60-line digest: position, recent decisions, resume point
 ├── learnings.jsonl         # append-only insights, newest-wins
+├── knowledge/              # distilled pages — regenerable cache over the journal
 ├── continue-here.md        # transient pause file (deleted on resume)
 └── phases/NN-slug/
     ├── DISCUSSION.md       # Decisions / Claude's Discretion / Deferred
