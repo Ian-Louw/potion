@@ -1,0 +1,15 @@
+{
+  "name": "potion",
+  "description": "Home of Potion — the lean closed-loop project framework for Claude Code.",
+  "owner": {
+    "name": "Ian Louw"
+  },
+  "plugins": [
+    {
+      "name": "potion",
+      "source": "./",
+      "version": "1.0.0",
+      "description": "The magic potion for Claude Code — a lean project framework distilled from GSD, Superpowers, and gstack. Filesystem is the memory, plans are prompts, evidence before claims."
+    }
+  ]
+}
