@@ -35,6 +35,10 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    match into the affected plan's TECHNICAL NOTES as
    `Prior learning applied: {key} — {one-line insight}`. A pitfall the flywheel
    already paid for must never be re-purchased by a fresh worker.
+   Do the same for the user-scope journal `~/.claude/potion/knowledge.jsonl`
+   (if present): matches are inlined as `Prior cross-repo learning: {key}
+   (from {repo})` — a pitfall paid for in another repo is never re-purchased
+   here.
 
 3. **Write plans** from `${CLAUDE_PLUGIN_ROOT}/templates/PLAN.md`: 2-3 tasks each, 15-60 minutes of agent
    time per task, exclusive `files_modified` per same-wave plan, `wave = max(deps)+1`.

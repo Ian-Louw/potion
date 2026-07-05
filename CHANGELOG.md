@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.1.0 — 2026-07-05
+
+The compounding release: what one repo learns, every repo knows.
+
+### Cross-repo knowledge journal
+- New user-scope journal `~/.claude/potion/knowledge.jsonl` — same grammar as
+  `.potion/learnings.jsonl` plus a mandatory provenance field:
+  `{"source":{"repo":"<repo-name>","key":"<original-key>","ts":"<date>"}}`
+- Promotion bar (CORE): confidence >= 8, generalizable beyond the source repo
+  (tools, frameworks, protocols — never business logic, secrets, or private
+  URLs), and born inside potion's verified loop
+- Memory-poisoning guard: external text is never promoted — only loop-born
+  entries cross the repo boundary
+- Append-only, newest-wins by key; interleaved appends from parallel sessions
+  absorbed by that rule; same ~500-line compaction as the repo journal
+- `/potion:learn` promotes up when the bar clears ("Promoted: {key}"), creates
+  the directory on first use; when in doubt, don't
+
+### Delivery
+- Planners grep `~/.claude/potion/knowledge.jsonl` in plan step 2 and cite
+  matches as `Prior cross-repo learning: {key} (from {repo})`
+- session-start hook surfaces the newest journal entries under a
+  "Cross-repo knowledge" header with `(from {repo})` provenance
+
+### Evidence
+- Real end-to-end run — genuine promotion, live hook delivery, plan-side
+  grep + attribution: `.potion/phases/05-compound/evidence/03-e2e-transcript.txt`
+
 ## 1.0.0 — 2026-07-05
 
 The campaign release: potion brewed itself. `.potion/` in this repo is the

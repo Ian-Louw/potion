@@ -30,6 +30,14 @@ Append one line to `.potion/learnings.jsonl`:
   learning is suspect.
 - `confidence`: 1-10. Raise it (append) when the learning proves out again.
 
+## Promote up
+
+Promote up: if the entry clears the cross-repo bar (CORE: confidence >= 8,
+generalizable, loop-born, nothing repo-private), ALSO append it to
+`~/.claude/potion/knowledge.jsonl` with the `source` field filled. Create the
+directory on first use. Say 'Promoted: {key}' when you do. When in doubt,
+don't — a polluted shared journal is worse than a sparse one.
+
 ## The ratchet — pitfalls become permanent checks
 
 Logging a `pitfall` is half the job. Before moving on, ask three questions:

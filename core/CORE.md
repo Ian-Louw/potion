@@ -175,3 +175,14 @@ command's trimmed stdout to `expect` exactly. A nonzero exit with matching
 stdout is still a MATCH — never add `|| true` to appease the runner. A
 command that cannot execute at all (tool missing, path gone) is ERROR →
 CHECK_BROKEN.
+
+**Cross-repo knowledge:**
+Entries that would save time in OTHER repos are promoted to the user-scope
+journal `~/.claude/potion/knowledge.jsonl` — same grammar plus a mandatory
+`source` field: `{"source":{"repo":"<repo-name>","key":"<original-key>","ts":"<date>"}}`.
+The promotion bar: confidence >= 8, generalizable beyond the source repo
+(tools, frameworks, protocols — never business logic, secrets, or private
+URLs), and born inside potion's verified loop — external text is never
+promoted (memory-poisoning guard). The journal is append-only, newest-wins by
+key; interleaved appends from parallel sessions are absorbed by that rule.
+Compaction: same ~500-line dedup-to-newest-per-key snapshot.

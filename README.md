@@ -1,52 +1,43 @@
+<div align="center">
+
 # 🧪 Potion
 
-**The magic potion for Claude Code.** A lean project framework distilled from the best of
-[GSD](https://github.com/gsd-build/get-shit-done), [Superpowers](https://github.com/obra/superpowers),
-and gstack — minus their combined ~1MB of ceremony.
+<em>The magic potion for Claude Code — plans are prompts, disk is memory,<br/>evidence or it didn't happen.</em>
 
-Eleven skills. Two agents. One hook. The filesystem is the memory, plans are
-prompts, and nothing is "done" without evidence.
+[![License](https://img.shields.io/github/license/Ian-Louw/potion)](LICENSE) [![Release](https://img.shields.io/github/v/release/Ian-Louw/potion)](https://github.com/Ian-Louw/potion/releases) ![Skills](https://img.shields.io/badge/skills-11-blueviolet) ![Agents](https://img.shields.io/badge/agents-2-blueviolet) ![Hooks](https://img.shields.io/badge/hooks-1-blueviolet) ![Brewed with itself](https://img.shields.io/badge/brewed_with-itself-8A2BE2)
 
-## Why
+</div>
 
-The three big Claude Code frameworks each got one thing profoundly right:
+```mermaid
+graph LR
+  init --> discuss --> plan --> execute --> verify
+  verify -->|pass| ship
+  verify -->|"gaps (≤3 cycles)"| plan
+```
 
-| Framework | Got right | Got wrong |
+Plus utilities: `/potion:pause` · `/potion:resume` · `/potion:learn` ·
+`/potion:investigate` — and **`/potion:brew`** runs the whole crank
+end-to-end, stopping only at human gates.
+
+**Eleven skills. Two agents. One hook.** No ceremony. This repo's own
+`.potion/` is the live proof — potion brewed itself to 1.0.0.
+
+## ⚡ Why
+
+A lean project framework distilled from the best of
+[GSD](https://github.com/gsd-build/get-shit-done),
+[Superpowers](https://github.com/obra/superpowers), and gstack — minus their
+combined ~1MB of ceremony. Each got one thing profoundly right:
+
+| Framework | ✅ Kept | ❌ Cut |
 |---|---|---|
-| **GSD** | Durable state on disk, goal-backward planning, mechanical verification | 27 commands, milestone bureaucracy, 625KB of prompts |
-| **Superpowers** | Skill-writing craft: Iron Laws, rationalization counters | Mandatory ceremony on every trivial task |
-| **gstack** | Evidence-based verification, circuit breakers, compounding learnings | 48 skills, ~500 duplicated preamble lines in each |
+| **GSD** | ✅ durable disk state<br/>✅ goal-backward planning<br/>✅ mechanical verification | ❌ 27 commands<br/>❌ milestone bureaucracy<br/>❌ 625KB of prompts |
+| **Superpowers** | ✅ skill-writing craft<br/>✅ Iron Laws, rationalization counters | ❌ ceremony on trivial tasks |
+| **gstack** | ✅ evidence-based verification<br/>✅ circuit breakers<br/>✅ compounding learnings | ❌ 48 skills<br/>❌ duplicated preambles |
 
 Potion keeps the mechanisms and cuts the mass. Every skill is under ~150 lines.
 Shared rules live in **one** core document. Enforcement lives in state files and
 verification ladders, not in ALL-CAPS pleading.
-
-## The loop
-
-```
-/potion:init        once per project → creates .potion/ (PROJECT.md, STATE.md)
-   │
-   ▼
-/potion:discuss     lock decisions before planning (Decisions / Discretion / Deferred)
-   ▼
-/potion:plan        goal-backward plan — what must be TRUE, EXIST, and be WIRED
-   ▼
-/potion:execute     fresh agent per plan, atomic commit per task, 4 deviation rules
-   ▼
-/potion:verify      trust nothing — exists → substantive → wired, evidence required
-   ▼
-/potion:ship        tests, changelog cross-check, PR
-```
-
-Plus four utilities: `/potion:pause` (save exact position), `/potion:resume`
-(restore it), `/potion:learn` (log insights that compound across sessions), and
-`/potion:investigate` (root-cause debugging with a durable session file — no
-fix without a reproduced root cause).
-
-And the crank, automated: **`/potion:brew`** runs plan → execute → verify →
-gap-cycle end-to-end, stopping only at human gates (Rule 4 checkpoints,
-human-verify batches, cycle-3 escalation). Decisions stay human — brew refuses
-to run without a locked DISCUSSION.md.
 
 ## The five laws that matter most
 
@@ -65,39 +56,6 @@ to run without a locked DISCUSSION.md.
 
 Full rationale in [PHILOSOPHY.md](PHILOSOPHY.md). Shared rules every skill inherits
 are in [core/CORE.md](core/CORE.md).
-
-## Closed loops by design
-
-Potion's phase cycle is a **closed loop** in the loop-engineering sense: a bounded
-goal, an independent checker, durable state, and a human checkpoint — with budgets
-and kill switches, not vibes:
-
-| Loop layer | Potion mechanism |
-|---|---|
-| Contract | `must_haves` (truths / artifacts / key links) + locked decisions |
-| State | `.potion/` — progress derived from artifacts on disk; strays route to `## Parked`, nothing evaporates; session continuity is rewritten whenever Position moves |
-| Checker | blind verifier: deterministic checks first, then exists → substantive → wired; runtime proof lands in `evidence/` and VERIFICATION.md cites it by path; evidence only counts against a fresh build serving HEAD |
-| Budgets | 3-strike fix breaker, 3-cycle gap-flywheel cap (counter on disk), quick-task ratchet |
-| Human checkpoint | Rule 4 deviations, `human_needed` flags, ship gate |
-| Ratchet | pitfalls promote to permanent `check` entries the verifier runs on every pass — each a POSIX-sh command with an exact `expect`, mechanically MATCH / MISMATCH / BROKEN; learnings travel forward too, delivered as keys in every worker's spawn digest |
-
-The Operator Test governs everything: *if the agent cannot prove it is done,
-you are not engineering a loop — you are automating drift.*
-
-## Install
-
-```bash
-# from GitHub (Claude Code)
-/plugin marketplace add Ian-Louw/potion
-/plugin install potion@potion
-```
-
-Alternative: clone the repo and run `claude --plugin-dir path/to/potion` for a
-zero-setup trial. Either way, install the whole plugin — do NOT copy `skills/`
-alone into a skills directory: the shared contract in `core/`, the `templates/`,
-`hooks/`, and `agents/` are load-bearing and only load through the plugin system.
-
-Only runtime dependency: `node` on PATH (for the session-start hook).
 
 ## Quickstart: your first brew
 
@@ -166,7 +124,49 @@ From here, **`/potion:brew`** automates the crank — plan → execute → verif
 gap-cycle in one command, stopping only at human gates. Decisions stay yours:
 brew refuses to run without a locked DISCUSSION.md.
 
-## What's in the box
+## 🔁 Closed loops by design
+
+Potion's phase cycle is a **closed loop** in the loop-engineering sense: a bounded
+goal, an independent checker, durable state, and a human checkpoint — with budgets
+and kill switches, not vibes:
+
+| Loop layer | Potion mechanism |
+|---|---|
+| Contract | `must_haves` (truths / artifacts / key links) + locked decisions |
+| State | `.potion/` — progress derived from artifacts on disk; strays route to `## Parked`, nothing evaporates; session continuity is rewritten whenever Position moves |
+| Checker | blind verifier: deterministic checks first, then exists → substantive → wired; runtime proof lands in `evidence/` and VERIFICATION.md cites it by path; evidence only counts against a fresh build serving HEAD |
+| Budgets | 3-strike fix breaker, 3-cycle gap-flywheel cap (counter on disk), quick-task ratchet |
+| Human checkpoint | Rule 4 deviations, `human_needed` flags, ship gate |
+| Ratchet | pitfalls promote to permanent `check` entries the verifier runs on every pass — each a POSIX-sh command with an exact `expect`, mechanically MATCH / MISMATCH / BROKEN; learnings travel forward too, delivered as keys in every worker's spawn digest |
+
+And this is how the actors sit — the "plans are prompts" story, drawn:
+
+```mermaid
+graph TB
+  P["📜 PLAN-01.md<br/>(a prompt, not a doc)"]
+  O["🎯 Orchestrator<br/>routes, never implements"]
+  W["🔨 Fresh worker<br/>executes the plan verbatim"]
+  V["🕵️ Blind verifier<br/>told nothing of what workers claimed"]
+  D[("🧪 .potion/ on disk<br/>the only memory")]
+  O -->|"spawns with a pointer"| W
+  P -->|"read first, executed verbatim"| W
+  W -->|"atomic commits + SUMMARY"| D
+  O -->|"spawns blind"| V
+  V -->|"exists → substantive → wired"| D
+  D -->|"progress = artifacts, never a status field"| O
+```
+
+> **Built with itself:** this repo's [`.potion/`](.potion/) is a real Potion
+> project — the loop above brewed
+> [v1.0.0](https://github.com/Ian-Louw/potion/releases/tag/v1.0.0).
+
+The Operator Test governs everything: *if the agent cannot prove it is done,
+you are not engineering a loop — you are automating drift.*
+
+## 📦 What's in the box
+
+<details>
+<summary>Repo layout — what ships in the plugin</summary>
 
 ```
 potion/
@@ -180,7 +180,12 @@ potion/
 └── PHILOSOPHY.md
 ```
 
+</details>
+
 State lives in your repo at `.potion/`:
+
+<details>
+<summary>The .potion/ state tree — every file, one line each</summary>
 
 ```
 .potion/
@@ -195,6 +200,23 @@ State lives in your repo at `.potion/`:
     ├── VERIFICATION.md     # ladder results + structured gaps
     └── evidence/           # runtime proof artifacts, referenced by path from VERIFICATION.md
 ```
+
+</details>
+
+## Install
+
+```bash
+# from GitHub (Claude Code)
+/plugin marketplace add Ian-Louw/potion
+/plugin install potion@potion
+```
+
+Alternative: clone the repo and run `claude --plugin-dir path/to/potion` for a
+zero-setup trial. Either way, install the whole plugin — do NOT copy `skills/`
+alone into a skills directory: the shared contract in `core/`, the `templates/`,
+`hooks/`, and `agents/` are load-bearing and only load through the plugin system.
+
+Only runtime dependency: `node` on PATH (for the session-start hook).
 
 ## Credits
 

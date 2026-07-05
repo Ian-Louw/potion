@@ -6,6 +6,7 @@
 // non-Potion projects.
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 
 const root = process.cwd();
@@ -87,6 +88,39 @@ if (learnings.length) {
   parts.push("\n## Prior learnings (top by confidence — apply and announce when relevant)");
   for (const l of learnings) {
     parts.push(`- [${l.type}] ${l.key}: ${l.insight} (confidence ${l.confidence || "?"})`);
+  }
+}
+
+const userJournal = path.join(os.homedir(), ".claude", "potion", "knowledge.jsonl");
+if (fs.existsSync(userJournal)) {
+  const raw = readTail(userJournal);
+  if (raw) {
+    const byKey = new Map(); // newest-wins per key; re-set moves key to newest position
+    for (const line of raw.split("\n")) {
+      const t = line.trim();
+      if (!t) continue;
+      try {
+        const obj = JSON.parse(t);
+        if (obj.key) {
+          byKey.delete(obj.key); // so later duplicates rank as newest
+          byKey.set(obj.key, obj);
+        }
+      } catch {
+        /* skip malformed lines */
+      }
+    }
+    const newest = [...byKey.values()]
+      .filter((l) => l.type !== "tombstone")
+      .slice(-3)
+      .reverse();
+    if (newest.length) {
+      parts.push("\n## Cross-repo knowledge (newest)");
+      for (const l of newest) {
+        const repo = (l.source && l.source.repo) || "?";
+        const insight = String(l.insight || "").slice(0, 100);
+        parts.push(`up: ${l.key} (from ${repo}): ${insight}`);
+      }
+    }
   }
 }
 
