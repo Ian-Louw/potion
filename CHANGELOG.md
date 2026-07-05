@@ -1,5 +1,38 @@
 # Changelog
 
+## 1.4.0 — 2026-07-05
+
+The self-audit release: the knowledge layer now lints itself — cache fixes are
+automatic, truth changes are human-gated. This completes the Karpathy-pattern
+set: journal (append-only truth) → pages (distilled cache) → lint (the
+auditor that keeps them honest).
+
+### Lint — four hunts over the knowledge tree
+- New "Lint" section in the learn skill, run over project scope then user
+  scope (commit fe6c069): (1) contradictions — semantic judgment of entry
+  insights and page syntheses, Claude is the linter; (2) stale claims —
+  `files` backpointers gone from disk, page claims superseded by newer
+  same-key entries; (3) orphans — page `### {key}` blocks with no live
+  journal line; (4) coverage gaps — confidence >= 8 live entries no page
+  distills
+- Trigger: runs automatically after every Distill, or on demand via
+  `/potion:learn lint`
+- The safety line — cache-auto, truth-human: cache-side findings (orphans,
+  stale page claims, coverage gaps) are fixed by rebuilding the affected
+  page whole from the journal; truth-side findings (contradictions, any
+  urge to tombstone or reword a journal entry) are NEVER self-resolved
+- Parked routing: truth-side findings go to STATE.md `## Parked`, one line,
+  both sources cited — the next /potion:discuss tables them
+- CORE contract: lint safety line under Learnings, core/CORE.md
+  (commit a8f7973)
+
+### Evidence
+- Live proof on the real knowledge tree, both scopes: clean baseline lint;
+  a transparently seeded cache-side orphan detected by hunt 3 and
+  auto-rebuilt away (rebuilt page byte-identical to HEAD); truth journals
+  sha1-identical across the entire run — the linter has teeth and a muzzle:
+  `.potion/phases/08-lint/evidence/02-lint-transcript.txt` (commit d7b24cb)
+
 ## 1.3.0 — 2026-07-05
 
 The distillation release: journals stay ground truth, pages make them readable.

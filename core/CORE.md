@@ -200,3 +200,8 @@ journal, `~/.claude/potion/pages/` for the user journal, each with an
 from the deduped journal, never hand-edited, safe to delete. Every page claim
 cites the entry key(s) it distills (user scope also cites the source repo) —
 an uncited claim is a defect.
+
+Lint guards the knowledge layer (procedure in /potion:learn): cache-side
+findings are fixed automatically by rebuilding pages from the journal;
+truth-side changes — tombstoning an entry, resolving a contradiction — are
+ALWAYS human-gated, routed to Parked with sources cited.

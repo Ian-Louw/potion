@@ -86,6 +86,33 @@ Triggered at compaction, or on demand (`/potion:learn distill`). Procedure:
 Pages are cache: when a page and the journal disagree, the journal wins and
 the page is due a rebuild.
 
+## Lint
+
+Runs automatically after every Distill, or on demand (`/potion:learn lint`).
+Project scope first, then user scope. Four hunts:
+
+1. Contradictions — within each topic, judge entry insights and the page
+   synthesis against each other for incompatible assertions. Mechanical greps
+   cannot see semantic conflict; you are the linter.
+2. Stale claims — entry `files` backpointers that no longer exist on disk;
+   page claims citing keys that a newer same-key entry superseded.
+3. Orphans — page `### {key}` blocks whose key no longer greps to a live
+   (non-tombstoned) journal line.
+4. Coverage gaps — confidence >= 8 live entries no page distills.
+
+Actions — the line that may not be crossed:
+
+- Cache-side (orphans, stale page claims, coverage gaps): rebuild the
+  affected page(s) whole from the journal — refreshing cache is not editing
+  knowledge.
+- Truth-side (contradictions; any urge to tombstone or reword a journal
+  entry): NEVER self-resolve. Route to STATE.md `## Parked`, one line, both
+  sources cited (`lint: X contradicts Y — human call`). The next
+  /potion:discuss tables it.
+
+Report as a table: hunt | location | finding | action (rebuilt / routed /
+none). Zero findings is a valid outcome — say 'lint clean' explicitly.
+
 ## Recall
 
 Reading happens automatically at session start (hook) and in /potion:resume.
