@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.3.0 — 2026-07-05
+
+The distillation release: journals stay ground truth, pages make them readable.
+
+### Distillation pages
+- New pages layer in two scopes: project journal distills to
+  `.potion/knowledge/` (committed with the repo), user journal to
+  `~/.claude/potion/pages/` (outside git) — each with an `index.md` listing
+  every page with its one-line scope and entry count
+- Pages are a regenerable cache, never ground truth: rebuilt whole from the
+  deduped journal, never hand-edited, safe to delete; when a page and the
+  journal disagree, the journal wins and the page is due a rebuild
+- Source-backed claims: every `### {key}` block cites the journal entry key
+  it distills (user scope also cites the source repo) — an uncited claim is
+  a defect
+- CORE contract: "Distillation pages" subsection under Learnings,
+  core/CORE.md (commit 55b4fa7)
+- Procedure: new "Distill" section in the learn skill — dedup newest-wins,
+  drop tombstones, cluster 2-6 entries per page, regenerate pages whole,
+  rewrite index (commit a641ecb)
+- Planners prefer synthesis: planning reads pages before raw journal
+  fragments when both exist (commit f509289)
+- Trigger honesty: automatic distillation fires at compaction (~500 lines),
+  which no journal has reached — the trigger is dormant until then. On-demand
+  runs via `/potion:learn distill` work today and produced the evidence below.
+
+### Evidence
+- First real distillation, both scopes: 9 project entries → 3 pages + index
+  in `.potion/knowledge/`; 3 user entries → 1 page + index in
+  `~/.claude/potion/pages/`; every citation spot-checked to exactly one
+  journal line:
+  `.potion/phases/07-distill/evidence/02-distill-transcript.txt`
+  (commit 371fc19)
+
 ## 1.2.0 — 2026-07-05
 
 The harvest release: no closed phase goes cold with its insights unharvested.

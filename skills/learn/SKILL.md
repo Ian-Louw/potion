@@ -68,6 +68,24 @@ reported as a regression. Each click of the ratchet locks in — nothing regress
 A pitfall that bites twice without earning a check entry is a process failure,
 not bad luck.
 
+## Distill
+
+Triggered at compaction, or on demand (`/potion:learn distill`). Procedure:
+
+1. Dedup the journal newest-wins by key; drop tombstoned entries.
+2. Cluster the entries into topics (2-6 entries per page typical); slug each
+   topic (`git-and-worktrees.md`, `github-rendering.md`).
+3. REGENERATE each affected page whole — title, a 2-4 sentence synthesis
+   paragraph (the compounding insight, not a list), then one `### {key}`
+   block per entry: insight, source citation (key; plus repo for user
+   scope), confidence, ts. Never patch a page; rebuild it.
+4. Rewrite `index.md`: `- [{topic}]({file}) — {one-line scope} ({N} entries)`.
+5. Project journal → `.potion/knowledge/`; user journal → `~/.claude/potion/pages/`.
+   Commit project pages with the repo; user pages live outside git.
+
+Pages are cache: when a page and the journal disagree, the journal wins and
+the page is due a rebuild.
+
 ## Recall
 
 Reading happens automatically at session start (hook) and in /potion:resume.

@@ -191,3 +191,12 @@ Phase-close ingest: a pass verdict triggers a harvest of the phase's
 SUMMARY/VERIFICATION/debug reasoning into learnings (procedure in
 /potion:verify step 4) — no closed phase goes cold with its insights
 unharvested.
+
+**Distillation pages:**
+At compaction (~500 lines) — or on demand via /potion:learn distill —
+journals synthesize into topical pages: `.potion/knowledge/` for the project
+journal, `~/.claude/potion/pages/` for the user journal, each with an
+`index.md`. Pages are a regenerable cache, never ground truth: rebuilt whole
+from the deduped journal, never hand-edited, safe to delete. Every page claim
+cites the entry key(s) it distills (user scope also cites the source repo) —
+an uncited claim is a defect.

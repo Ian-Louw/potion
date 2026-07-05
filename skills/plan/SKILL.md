@@ -39,6 +39,10 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    (if present): matches are inlined as `Prior cross-repo learning: {key}
    (from {repo})` — a pitfall paid for in another repo is never re-purchased
    here.
+   If `.potion/knowledge/index.md` (or the user-scope
+   `~/.claude/potion/pages/index.md`) lists a page matching the phase's stack,
+   read the page — synthesis beats fragments; the jsonl grep remains the
+   fallback when no page matches.
 
 3. **Write plans** from `${CLAUDE_PLUGIN_ROOT}/templates/PLAN.md`: 2-3 tasks each, 15-60 minutes of agent
    time per task, exclusive `files_modified` per same-wave plan, `wave = max(deps)+1`.
