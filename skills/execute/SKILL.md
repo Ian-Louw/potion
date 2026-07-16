@@ -72,7 +72,9 @@ steps the human completed between sessions confirm mechanically.
 A task qualifies for inline execution ONLY if all four hold: ≤1 file, ≤~30
 changed lines, reversible in one revert, and not named in any DISCUSSION.md
 Decisions or Deferred bucket. Still mandatory: atomic commit, evidence gate
-before claiming done, one-line note in STATE.md. The ratchet: the third
+before claiming done, one-line note in STATE.md. Quick tasks skip
+`<spec_deltas>` unless they change specced behavior — then write the delta and
+run `scripts/merge-specs.sh` in the same session. The ratchet: the third
 consecutive quick task on a project is a phase wearing a disguise — stop and
 run /potion:discuss.
 

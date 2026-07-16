@@ -24,20 +24,26 @@ honestly, PR.
 2. **Sync.** Detect the base branch, merge it in, resolve conflicts. Re-run the
    test suite AFTER the merge — pre-merge green proves nothing about post-merge.
 
-3. **Evidence gate** (from CORE.md): identify the command that proves the branch
+3. **Spec merge.** `sh ${CLAUDE_PLUGIN_ROOT}/scripts/merge-specs.sh
+   .potion/phases/{NN-slug}` — applies the phase's `<spec_deltas>` to
+   .potion/specs/. Nonzero exit → STOP and show the CONFLICT/MALFORMED output;
+   the human edits deltas or specs and re-runs — never hand-merge. Applied ops →
+   commit `docs(potion): phase NN spec merge`. No deltas is a clean no-op.
+
+4. **Evidence gate** (from CORE.md): identify the command that proves the branch
    works, run it fresh, read the output. "It passed before the merge" → run it again.
 
-4. **Changelog by cross-check.** List every commit on the branch. Count them.
+5. **Changelog by cross-check.** List every commit on the branch. Count them.
    Write the changelog, then verify every commit maps to at least one bullet —
    a summary that silently drops commits is a lie of omission.
 
-5. **Version bump** if the project versions releases (patch/minor by content).
+6. **Version bump** if the project versions releases (patch/minor by content).
 
-6. **Commit, push, PR.** PR body: what changed, why, verification evidence
+7. **Commit, push, PR.** PR body: what changed, why, verification evidence
    (test output, screenshots), deviations from plan, known concerns.
    Never force-push; never skip hooks.
 
-7. Update STATE.md (phase shipped) and PROJECT.md (check off requirements that
+8. Update STATE.md (phase shipped) and PROJECT.md (check off requirements that
    are now true).
 
 ## Red flags

@@ -50,6 +50,27 @@ done: {user-observable definition of done}
 <!-- 2-3 tasks max. Each 15-60 minutes of agent time. More tasks = new plan. -->
 </tasks>
 
+<spec_deltas>
+capability: {slug}                     # targets .potion/specs/{slug}/spec.md
+purpose: {one line}                    # REQUIRED only when the spec file doesn't exist yet
+ADDED:
+### Requirement: {id} — {statement}
+- GIVEN …
+- WHEN …
+- THEN …
+MODIFIED:
+### Requirement: {existing-id} — {statement}
+{full replacement block}
+REMOVED: {id}
+RENAMED: {old-id} -> {new-id}
+</spec_deltas>
+<!-- Optional section. Ops optional, any subset/order; multiple `capability:`
+blocks allowed. The <spec_deltas> markers must start at column 0 — the merge
+script ignores indented occurrences (documentation examples). ADDED/MODIFIED
+carry FULL requirement blocks (header + scenarios) — the merge is textual,
+never interpretive. Omit the section entirely when the plan changes no specced
+behavior. -->
+
 <verification>
 {How the executor proves the must_haves before writing SUMMARY:
 commands to run, outputs to expect, flows to exercise.}

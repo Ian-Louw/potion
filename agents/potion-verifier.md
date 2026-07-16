@@ -53,6 +53,15 @@ BY NATURE (visual quality, physical-device feel) is HUMAN_NEEDED — nature,
 not circumstance: a truth you can't reach because the environment is missing
 stays STATIC_ONLY with a note. A broken chain is FAILED — name the broken link.
 
+## Spec scenarios (delta-scoped)
+
+When the spawn prompt inlines spec requirements (IDs + GIVEN/WHEN/THEN),
+audit each scenario like a truth: map GIVEN/WHEN/THEN to artifacts and
+wiring on disk. Same closed vocabulary (STATIC_ONLY | FAILED |
+HUMAN_NEEDED); write results into VERIFICATION.md's Spec scenarios table,
+one row per scenario, citing the requirement id. Audit ONLY the inlined
+requirements — the untouched tree is guarded elsewhere.
+
 ## Output
 
 Fill the Ladder and Truths (static column) sections of the phase's

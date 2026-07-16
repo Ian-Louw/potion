@@ -1,5 +1,62 @@
 # Changelog
 
+## 1.7.0 — 2026-07-17
+
+The living-specs release: `.potion/specs/` now carries the current truth of
+how the system behaves, plans carry mechanical deltas against it, ship merges
+them with a script that refuses to guess, and the verifier audits touched
+requirements scenario-by-scenario.
+
+### Spec merge machinery
+- `templates/spec.md`: the canonical spec format — `### Requirement: id —
+  statement` headers, GIVEN/WHEN/THEN scenarios, `<!-- source: -->` comments
+  (commit 3e5f9a3).
+- `scripts/merge-specs.sh`: deterministic validate-then-apply merge of plan
+  `<spec_deltas>` (ADDED/MODIFIED/REMOVED/RENAMED) into `.potion/specs/`;
+  any conflict or malformed delta exits nonzero naming the requirement ID
+  with the tree left untouched; POSIX sh+awk, column-0 markers only
+  (commit 46382a6).
+- Fixture self-test covering clean 4-op merge, seeded-conflict atomicity, and
+  malformed deltas, wired into the verify ratchet as
+  `check-merge-specs-selftest` (commit 608ce4c).
+
+### Spec backfill (dogfood)
+- Six capability specs seeded into potion's own `.potion/specs/` — 32
+  requirements across verification-ladder, verify-env, evidence-index,
+  enforcement-hooks, learnings-flywheel, plan-runbook-gating — every
+  requirement source-cited to the implementing file, shipped behavior only
+  (commits 22d4894, a43a678).
+
+### Verification upgrades
+- Evidence INDEX generator extracted verbatim to
+  `scripts/gen-evidence-index.sh` (phase 10/11 regeneration byte-identical);
+  the verify skill regains line-bar headroom (commit 26cab82).
+- Blind verifier contract gains a delta-scoped Spec scenarios audit;
+  `templates/VERIFICATION.md` gains the Spec scenarios table and mandates the
+  `| N. text |` truth-row shape the INDEX citation regex depends on
+  (commit 78a21d4).
+- Witness checks: `type:check` entries keyed `witness-{phase}-{slug}` guard
+  the untouched spec tree; a MISMATCH triggers one repo-wide grep — found
+  elsewhere = DRIFT (re-pin), absent = REGRESSION. Two real witnesses seeded;
+  verify's step-2 spawn prompt now inlines the phase's spec deltas
+  (commit 86f865d).
+
+### Workflow wiring
+- CORE.md: `.potion/specs/` in the state layout plus a Living specs contract
+  every skill inherits (commit 7074344).
+- `templates/PLAN.md` documents the `<spec_deltas>` grammar; skills/plan
+  instructs writing deltas whenever a phase changes specced behavior
+  (commit ab9b12d).
+- skills/ship gains the spec-merge step (blocks on nonzero exit — the human
+  resolves, the agent never hand-merges); skills/execute quick mode documents
+  the spec-delta exemption (commit a53b23b).
+
+### Process records
+- Phase 12 discussion, plans, per-plan summaries, verification (cycle 1 pass,
+  14/14 truths, live conflict/merge/index/witness evidence), and state
+  bookkeeping (commits 0bb2199, 2b679db, e6a2654, 1de7bfb, f656784, 49e135f,
+  9dd1c99, cc58eb8, e9eb306).
+
 ## 1.6.0 — 2026-07-16
 
 The enforcement release: discipline now holds mechanically. Secrets are

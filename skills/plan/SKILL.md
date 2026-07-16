@@ -63,6 +63,12 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    `none-needed: <why>` declaration. Absent → STOP; ask the user the verify-env
    question (`${CLAUDE_PLUGIN_ROOT}/templates/verify-env.md`) and write the file
    first. Silence is the only illegal state.
+
+   **Spec deltas:** a plan that changes behavior described in `.potion/specs/`
+   (or establishes behavior worth speccing) carries a `<spec_deltas>` section
+   per templates/PLAN.md — full requirement text, IDs per the spec format.
+   Ship merges them mechanically; a missing delta means the spec silently rots.
+
    Inline everything the executor needs in `<context>` — the plan is the ONLY
    thing the worker is guaranteed to read, and a worker sent hunting through the
    repo for intent will reconstruct the wrong intent. Write for an engineer with

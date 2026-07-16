@@ -131,6 +131,17 @@ steps; secret values live in gitignored `.potion/verify-env.local`) or the
 single line `none-needed: <why>`. Silence is the only illegal state: planners
 refuse to schedule runtime-proof truths without it.
 
+## Living specs
+
+`.potion/specs/` says how the system behaves NOW (format: `templates/spec.md`).
+Plans carry `<spec_deltas>` (ADDED/MODIFIED/REMOVED/RENAMED, full requirement
+text); ship applies them via `scripts/merge-specs.sh` — deterministic,
+validate-then-apply, nonzero exit blocks ship for the human. Verifier audit is
+delta-scoped: touched requirements get scenario-level audit; the untouched
+tree is guarded by witness checks (`type:check`, key `witness-{phase}-{slug}`)
+— a witness that fails its pinned path gets one repo-wide grep: found
+elsewhere = DRIFT (re-pin via /potion:learn), absent = REGRESSION.
+
 ## Context economics
 
 - Orchestrators discover, delegate, and route — they do not read big files. Target
@@ -153,6 +164,8 @@ refuse to schedule runtime-proof truths without it.
 ├── continue-here.md      # transient pause file; delete after resume
 ├── verify-env.md         # runtime session recipe OR `none-needed: <why>` — never absent
 ├── verify-env.local      # secret values for the recipe (gitignored)
+├── specs/                # current truth, one dir per capability
+│   └── {capability}/spec.md   # `### Requirement:` IDs + GIVEN/WHEN/THEN — mutated only by merge-specs.sh on ship, or a human
 └── phases/NN-slug/
     ├── DISCUSSION.md     # Decisions / Claude's Discretion / Deferred
     ├── PLAN-NN.md        # the prompt an executor runs verbatim
