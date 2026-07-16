@@ -85,6 +85,17 @@ Track every deviation as `[Rule N] description` for the SUMMARY.
 - Gap flywheel: max 3 verify→fix cycles per phase (cycle counter lives in
   VERIFICATION.md frontmatter), then escalate with what was tried.
 
+## Enforcement hooks
+
+All three fail open on internal error — instrumentation never traps a session.
+- **Secret scrubber** (PreToolUse) BLOCKS `git commit` when `.potion/` content
+  is secret-shaped or verify-env.local would be committed; no agent bypass —
+  the override is the human committing manually.
+- **Stop drift nudge** (Stop) is one-shot: it blocks a stop once with the
+  exact bookkeeping defects; the second stop always passes.
+- **Compaction re-grounding** (SessionStart, compact) injects a mechanical
+  mid-phase digest from disk — trust it over the compaction summary.
+
 ## The verification ladder (canonical)
 
 Artifact statuses: `VERIFIED | STUB | ORPHANED | MISSING`.
@@ -149,6 +160,7 @@ refuse to schedule runtime-proof truths without it.
     ├── SUMMARY-NN.md     # existence of this file = plan complete
     ├── VERIFICATION.md   # ladder results + structured gaps
     └── evidence/          # runtime proof artifacts: {plan-or-cycle}-{slug}.{ext}, referenced by path from VERIFICATION.md
+        └── INDEX.md       # generated regenerable cache (sha256-8, duplicates flagged); hand-editing is a defect
 ```
 
 Progress is always computed: for each `PLAN-NN.md`, the matching `SUMMARY-NN.md`

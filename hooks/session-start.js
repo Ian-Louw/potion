@@ -65,8 +65,45 @@ function topLearnings(jsonlPath, n = 3) {
     .slice(0, n);
 }
 
+function readStdinSource() {
+  // Hook payloads arrive on stdin as JSON with a `source` field:
+  // "startup" | "clear" | "compact". Defensive: any failure → null.
+  try {
+    return JSON.parse(fs.readFileSync(0, "utf8")).source || null;
+  } catch {
+    return null;
+  }
+}
+
+function positionSection(stateText) {
+  // The "## Position" section verbatim, up to the next H2.
+  // No /m flag: `$` must mean end-of-string, or the lazy capture stops at
+  // the first line boundary and returns empty.
+  const m = stateText.match(/\n## Position\n([\s\S]*?)(?=\n## |$)/);
+  return m ? m[1].trim() : null;
+}
+
+function planTally(stateText) {
+  // Derive the phase dir from the "- Phase:" line's slug, then count
+  // PLAN-*.md vs SUMMARY-*.md — SUMMARY existence = plan complete.
+  try {
+    const phaseLine = stateText.match(/^- Phase:.*$/m);
+    if (!phaseLine) return null;
+    const slug = phaseLine[0].match(/\b(\d+(?:\.\d+)?-[a-z0-9-]+)/);
+    if (!slug) return null;
+    const dir = path.join(potionDir, "phases", slug[1]);
+    const files = fs.readdirSync(dir);
+    const total = files.filter((f) => /^PLAN-\d+\.md$/.test(f)).length;
+    const done = files.filter((f) => /^SUMMARY-\d+\.md$/.test(f)).length;
+    return `Plans: ${done} of ${total} complete (SUMMARY existence)`;
+  } catch {
+    return null;
+  }
+}
+
 if (!fs.existsSync(potionDir)) process.exit(0);
 
+const source = readStdinSource();
 const parts = [];
 
 const state = readIfExists(path.join(potionDir, "STATE.md"));
@@ -121,6 +158,24 @@ if (fs.existsSync(userJournal)) {
         parts.push(`up: ${l.key} (from ${repo}): ${insight}`);
       }
     }
+  }
+}
+
+if (source === "compact" && state) {
+  // Post-compaction re-grounding: mechanical digest from disk, because the
+  // compaction summary may have dropped or distorted mid-phase state.
+  try {
+    parts.push("\n## Post-compaction re-grounding (mechanical, trust this over the summary)");
+    const pos = positionSection(state);
+    if (pos) parts.push(pos);
+    const tally = planTally(state);
+    if (tally) parts.push(tally);
+    parts.push(
+      "First act: re-read .potion/STATE.md — the compaction summary may " +
+        "have dropped or distorted mid-phase state."
+    );
+  } catch {
+    /* warn-posture: never block a session over the digest */
   }
 }
 
