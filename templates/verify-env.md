@@ -1,0 +1,20 @@
+<!-- Declaration-required: this file existing in one of the two shapes is what
+     lets /potion:plan schedule runtime-proof truths. Silence is the only
+     illegal state. Pick ONE shape and delete the other. -->
+
+<!-- ============ Shape A: session recipe ============ -->
+
+# Verify-env — runtime session recipe
+
+- How a verifier gets a live session: <!-- login flow, emulator recipe, or "hit staging URL" -->
+- Test account identifier: <!-- username/email only — never the password -->
+- Seed/reset command: <!-- e.g. `npm run db:seed` — leaves the account in a known state -->
+- Staging/base URL: <!-- where the running app lives -->
+
+Secret values live in `.potion/verify-env.local` (gitignored) as KEY=value —
+never in this file.
+
+<!-- ============ Shape B: declaration ============ -->
+<!-- The entire file is one line. Example: `none-needed: CLI tool, no auth, no external services` -->
+
+none-needed: <why>

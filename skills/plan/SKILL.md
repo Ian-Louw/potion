@@ -26,6 +26,14 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
 1. Read STATE.md, PROJECT.md, and the phase's DISCUSSION.md. Decisions are locked;
    Deferred is untouchable. If DISCUSSION.md doesn't exist, run /potion:discuss first.
 
+   **Gate preflight:** read DISCUSSION.md's `gates:` frontmatter. Work blocked on
+   a `hitl` gate becomes RUNBOOK-{NN}.md (from `${CLAUDE_PLUGIN_ROOT}/templates/RUNBOOK.md`)
+   in the phase's plan numbering and wave order — never an executable PLAN;
+   downstream plans `depends_on` the runbook's number. `afk` gates are handled
+   inside plans. Field rationale: two audited repos wrote plans that were never
+   executable (0/4, 0/1) because human gates were discovered at run time instead
+   of plan time.
+
 2. If the phase needs research (unfamiliar library, external API), do a focused
    pass now and write findings into the plans' `<context>` — not a separate
    research pipeline.
@@ -46,6 +54,15 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
 
 3. **Write plans** from `${CLAUDE_PLUGIN_ROOT}/templates/PLAN.md`: 2-3 tasks each, 15-60 minutes of agent
    time per task, exclusive `files_modified` per same-wave plan, `wave = max(deps)+1`.
+   Numbering: PLAN-NN and RUNBOOK-NN share one pool — the next number is one past
+   the highest existing PLAN-NN or RUNBOOK-NN.
+
+   **Verify-env refusal:** before writing any plan whose truths need a live
+   session (login flows, on-device behavior, served UI — not CLI invocations or
+   disk reads): `.potion/verify-env.md` must exist as a recipe or a
+   `none-needed: <why>` declaration. Absent → STOP; ask the user the verify-env
+   question (`${CLAUDE_PLUGIN_ROOT}/templates/verify-env.md`) and write the file
+   first. Silence is the only illegal state.
    Inline everything the executor needs in `<context>` — the plan is the ONLY
    thing the worker is guaranteed to read, and a worker sent hunting through the
    repo for intent will reconstruct the wrong intent. Write for an engineer with
@@ -84,7 +101,8 @@ self-check (step 4) and STATE.md update + commit (step 5) ALWAYS apply.
 When invoked with gaps (from /potion:verify), read the structured gaps in
 VERIFICATION.md frontmatter and write fix plans (`gap_closure: true`) targeting
 exactly those gaps — nothing else. Numbering: continue the phase's sequence —
-next number after the highest existing PLAN-NN, never reuse (a reused number
+next number after the highest existing PLAN-NN or RUNBOOK-NN (runbooks occupy
+numbers in the same pool), never reuse (a reused number
 whose SUMMARY exists is silently skipped by execute; abort if `SUMMARY-{NN}`
 already exists for your chosen number). Check VERIFICATION.md's `cycle`: if
 this would be cycle 4, stop and escalate instead — the flywheel budget is 3.
@@ -96,6 +114,7 @@ this would be cycle 4, stop and escalate instead — the flywheel budget is 3.
 | "I'll reference the doc instead of inlining it" | The worker is guaranteed to read ONE file. Paste it. |
 | "The executor will know what 'appropriate' means" | That word is the plan failing. Specify it. |
 | "Tasks 4 and 5 are tiny, they can stay" | Tiny tasks are how plans hit 80% context. New plan. |
+| "The human steps can go in the plan's context" | A worker can't press console buttons. hitl-gated work is a RUNBOOK. |
 
 ## Exit
 

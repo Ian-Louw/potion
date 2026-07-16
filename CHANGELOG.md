@@ -1,5 +1,55 @@
 # Changelog
 
+## 1.5.0 — 2026-07-16
+
+The runtime-boundary release: verification now names exactly why a truth went
+unchecked, and human-gated work gets its own first-class artifact. Cycle 2
+opens here.
+
+### Truth vocabulary restructure
+- `COULD_NOT_CHECK(reason)` joins the ladder with a closed reason vocabulary
+  (auth-wall | device-needed | build-broken | tool-missing | timeout | other);
+  the pass rule is conversion-gated — a phase never passes with an unconverted
+  COULD_NOT_CHECK, and conversion is explicit human acknowledgment recorded in
+  `accepted` (commits 60ca0b4, d8172e0).
+- `HUMAN_NEEDED` narrows to truths a human must attest BY NATURE (visual
+  quality, feel); environmental blockage is never HUMAN_NEEDED — the blind
+  verifier stays STATIC_ONLY with a note (88653d3).
+- verify gains an env-health preflight before the blind spawn, recorded in
+  VERIFICATION.md's new Preflight section; an env-failed truth becomes
+  COULD_NOT_CHECK immediately, no live attempt burned (e5e6507, d75c4d6);
+  plus a nature-vs-circumstance red-flag row and a verified_at rewrap so the
+  timestamp rule greps on one line (38a5d0c).
+
+### verify-env: declaration-required
+- New `templates/verify-env.md` with two legal shapes — session recipe or
+  `none-needed: why`; silence is the only illegal state (1de3e5b, 55e9c98).
+- init asks how a verifier gets a live runtime session and gitignores
+  `.potion/verify-env.local` so secrets can't be committed (a733198); discuss
+  backfills the declaration when absent and surfaces external prerequisites
+  as hitl/afk-tagged `gates:` frontmatter (047bde8).
+- plan refuses to schedule runtime-proof truths while the declaration is
+  missing, routing to it instead (c9b040c). Potion's own repo now carries its
+  declaration: none-needed, prompt-pack (6f068b9, ef1ed6e).
+
+### RUNBOOK: human-gated work as a numbered peer of PLAN
+- New `templates/RUNBOOK.md` — per-step `done_when` (mechanical cmd+expect or
+  human-attest), completion via SUMMARY-NN type: runbook (0194df9).
+- plan converts hitl-gated work into RUNBOOK-NN in the phase's shared number
+  pool, never an executable PLAN (c9b040c); execute treats runbooks as
+  first-class wave units — runs done_when checks, checkpoints on unconfirmed
+  steps, never spawns a worker (d97ba8a); brew lists an unconfirmed runbook
+  among its human gates so unattended runs stop instead of grinding
+  (e7378d5); the SUMMARY template documents the runbook variant (e7378d5).
+
+### Bookkeeping
+- Cycle 2 initialized from the field-evidence research: 5 phases; phase 10
+  discussed, planned (5 plans, 3 waves), executed, and verified — 15/15
+  truths VERIFIED via 5 scratch-fixture dogfood runs with evidence on disk
+  (091e58c, 509370d, 625340c, worker summaries be9d399/7ae4252/3ce8773/
+  5f214f3/17ceadb, 986b9f2, 1c11ce4).
+- README goes version-free — the release badge carries the number (c53f56c).
+
 ## 1.4.1 — 2026-07-06
 
 The mischief release: the verifier survived its own red-team.

@@ -16,7 +16,8 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Creates the project's durable memo
   phase."
 - `.potion/` exists with ALL phases checked off → this is a new cycle, not an
   error. New-cycle procedure:
-  1. Interview for the next batch of requirements (step 2 as written).
+  1. Interview for the next batch of requirements (step 2 as written,
+     including the verify-env question if `.potion/verify-env.md` is absent).
   2. Propose new phases numbered CONTINUING from the highest existing phase
      number (6 phases done → next is 07).
   3. APPEND them to PROJECT.md's `## Phases` — never rewrite PROJECT.md,
@@ -36,6 +37,9 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Creates the project's durable memo
    - The core value — the single thing that must work.
    - 3-7 active requirements as user-observable truths.
    - What is explicitly out of scope, and why.
+   - How does a verifier get a live runtime session? (test account / seed
+     command / emulator recipe — or explicitly nothing: a no-auth CLI needs
+     only `none-needed: <why>`.)
    Stop asking as soon as you can write a PROJECT.md the user would sign.
    If the user asks whether the idea is worth building, be direct — interest
    is not demand; behavior counts, money counts. Unsolicited, keep it to one
@@ -49,10 +53,14 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Creates the project's durable memo
    - `.potion/PROJECT.md` — filled template, phases appended as a `## Phases` list
      with checkboxes.
    - `.potion/STATE.md` — position: Phase 1, no plans yet, status: planning.
+   - `.potion/verify-env.md` — from `templates/verify-env.md`, filled with the
+     interview answer (recipe or `none-needed: <why>`).
    - `.potion/phases/01-{slug}/` — empty directory for the first phase.
 
 5. **Housekeeping:** append `.potion/learnings.jsonl merge=union` to
-   `.gitattributes` (append-only files merge sanely across branches).
+   `.gitattributes` (append-only files merge sanely across branches). Append
+   `.potion/verify-env.local` to `.gitignore` (create `.gitignore` if absent)
+   — one line, with the comment "secret values for the runtime session recipe".
 
 6. **Commit:** `chore(potion): initialize project memory`.
 

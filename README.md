@@ -20,8 +20,8 @@ Plus utilities: `/potion:pause` · `/potion:resume` · `/potion:learn` ·
 end-to-end, stopping only at human gates.
 
 **Eleven skills. Two agents. One hook.** No ceremony. This repo's own
-`.potion/` is the live proof — potion brewed itself to v1.4.0, then
-red-teamed its own verifier with five seeded defects. It caught all five.
+`.potion/` is the live proof — potion brews itself, and it red-teamed its
+own verifier with five seeded defects. It caught all five.
 
 ## ⚡ Why
 
@@ -158,9 +158,8 @@ graph TB
 ```
 
 > **Built with itself:** this repo's [`.potion/`](.potion/) is a real Potion
-> project — the loop above brewed every release from
-> [v1.0.0](https://github.com/Ian-Louw/potion/releases/tag/v1.0.0) through
-> [v1.4.0](https://github.com/Ian-Louw/potion/releases/tag/v1.4.0). Then the
+> project — the loop above brewed
+> [every release](https://github.com/Ian-Louw/potion/releases). Then the
 > mischief audit ([`.potion/phases/09-mischief/`](.potion/phases/09-mischief/))
 > red-teamed the verifier itself: five classed defects seeded behind a sealed
 > answer key — stub, wired-but-wrong, phantom commit, orphaned artifact,

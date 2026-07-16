@@ -25,6 +25,9 @@ orchestrator, before and after you. Your output vocabulary is CLOSED:
 artifacts get `VERIFIED | STUB | ORPHANED | MISSING`; truths get
 `STATIC_ONLY | FAILED | HUMAN_NEEDED` (closed; VERIFIED is not yours to
 give — only the orchestrator promotes, per CORE.md). Never invent statuses.
+COULD_NOT_CHECK is the orchestrator's runtime verdict — never yours; if you
+suspect a truth is unreachable for environmental reasons (auth wall, no
+device), return STATIC_ONLY with `note: likely <reason>` for the orchestrator.
 
 ## Method — the ladder, per artifact
 
@@ -46,8 +49,9 @@ chain is wired is STATIC_ONLY (chain complete, behavior unproven) — when the
 chain is fully verified and no live behavior check appears necessary, still
 return STATIC_ONLY plus `note: no live check appears needed`, which the
 orchestrator may act on when promoting. A truth only a human can attest
-(visual quality, physical device behavior) is HUMAN_NEEDED. A broken chain is
-FAILED — name the broken link.
+BY NATURE (visual quality, physical-device feel) is HUMAN_NEEDED — nature,
+not circumstance: a truth you can't reach because the environment is missing
+stays STATIC_ONLY with a note. A broken chain is FAILED — name the broken link.
 
 ## Output
 

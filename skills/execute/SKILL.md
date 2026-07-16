@@ -12,10 +12,11 @@ Context budget: ~15% you, 100% fresh per worker.
 ## Steps
 
 1. **Discover.** Read STATE.md Position — the target phase is the current
-   phase (or the explicit argument if given). List `PLAN-*.md` ONLY in that
-   phase's directory. A plan with a matching `SUMMARY-*.md` (same NN) is
-   already complete — skip it. Completion state is derived from artifact
-   existence, never from a status field.
+   phase (or the explicit argument if given). List `PLAN-*.md` AND
+   `RUNBOOK-*.md` ONLY in that phase's directory. A unit with a matching
+   `SUMMARY-*.md` (same NN) is already complete — skip it, either kind.
+   Completion state is derived from artifact existence, never from a status
+   field.
 
 2. **Wave up.** Group remaining plans by `wave` frontmatter. Within a wave, plans
    own disjoint `files_modified` — spawn them as parallel agents in one message.
@@ -44,6 +45,17 @@ Context budget: ~15% you, 100% fresh per worker.
    collect the user's answer, then spawn a **fresh** worker whose prompt includes
    that table — its first act is `git log --oneline -10` to verify those commits
    exist. Fresh agents with explicit state beat resumed agents with stale context.
+
+## Runbooks (human gates in the wave)
+
+A RUNBOOK-NN in the current wave is never given to a worker — runbooks are
+executed by humans. Run each step's `done_when` (per CORE.md's check-runner
+contract); `human-attest` steps and failed checks are presented to the user as
+ONE checkpoint (step list + exact `do:` instructions). All steps confirmed →
+write SUMMARY-NN from the template's runbook variant (type: runbook, per-step
+results: MATCH / human-attested). Unconfirmed → the wave blocks there; report
+which steps remain and stop. A re-run of execute re-checks `done_when` first —
+steps the human completed between sessions confirm mechanically.
 
 5. **Watchdog.** A worker with no new commits and no return for ~15 minutes:
    check disk first (git log + phase dir may show it mid-task, e.g. a long

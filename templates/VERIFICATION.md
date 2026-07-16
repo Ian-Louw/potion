@@ -5,13 +5,25 @@ verified_at: "{ISO datetime — ship compares this against the newest code commi
 cycle: 1                      # increments each verify pass; 3 is the budget
 gaps:                         # empty list when verdict: pass
   - truth: "{the must-have truth}"
-    status: "{STUB | ORPHANED | MISSING | FAILED | HUMAN_NEEDED}"
+    status: "{STUB | ORPHANED | MISSING | FAILED | COULD_NOT_CHECK(<reason>) | HUMAN_NEEDED}"
     reason: "{what the ladder found}"
     missing: "{what would close it}"
-accepted: []                  # gaps the user explicitly accepted, with date
+accepted: []                  # gaps the user explicitly accepted or converted (COULD_NOT_CHECK needs reason + why + date, this cycle)
 ---
 
 # Verification — {phase}
+
+## Preflight
+
+<!-- Run before spawning the blind verifier; a runtime truth whose env check
+     fails becomes COULD_NOT_CHECK(reason) — do not burn a live attempt to
+     rediscover it. -->
+
+| Env check | Result |
+|---|---|
+| build green | {pass/fail} |
+| test runner present | {pass/fail} |
+| verify-env satisfiable for this phase's runtime truths | {recipe \| none-needed \| MISSING} |
 
 ## Level 0 — deterministic
 
@@ -28,7 +40,7 @@ accepted: []                  # gaps the user explicitly accepted, with date
 
 ## Truths
 
-<!-- Final status vocabulary: VERIFIED | STATIC_ONLY | FAILED | HUMAN_NEEDED -->
+<!-- Final status vocabulary: VERIFIED | STATIC_ONLY | FAILED | COULD_NOT_CHECK(reason) | HUMAN_NEEDED -->
 <!-- Runtime evidence entries are PATHS into phases/NN-slug/evidence/
      ({plan-or-cycle}-{slug}.{ext}) plus a ≤1-line note — not prose claims. -->
 

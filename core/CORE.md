@@ -88,10 +88,22 @@ Track every deviation as `[Rule N] description` for the SUMMARY.
 ## The verification ladder (canonical)
 
 Artifact statuses: `VERIFIED | STUB | ORPHANED | MISSING`.
-Truth statuses: `VERIFIED | STATIC_ONLY | FAILED | HUMAN_NEEDED`.
+Truth statuses: `VERIFIED | STATIC_ONLY | FAILED | COULD_NOT_CHECK(reason) | HUMAN_NEEDED`.
 A truth is only VERIFIED once runtime evidence exists; STATIC_ONLY is a
 handoff to the orchestrator, never a final verdict. The blind verifier emits
 at most STATIC_ONLY; only the orchestrator promotes to VERIFIED.
+
+- `HUMAN_NEEDED`: ONLY truths a human must attest by nature (visual quality,
+  physical-device feel). Nature, not circumstance.
+- `COULD_NOT_CHECK(reason)`: the runtime pass could not be run. Closed reasons:
+  `auth-wall | device-needed | build-broken | tool-missing | timeout |
+  other(<text>)`. Assigned ONLY by the orchestrator's runtime step — the blind
+  verifier stays static and never emits it.
+- Pass rule: verdict `pass` is impossible while any COULD_NOT_CHECK is
+  unconverted. Conversion is explicit: the human acknowledges it THIS cycle and
+  it moves to `accepted` with the reason and why. Rationale: environmental debt
+  stays visible and blocking; the dumping-ground pattern (5 HUMAN_NEEDED
+  accepted in one field phase) is what this kills.
 
 The one canonical stub-grep (illustrative — derive stack-appropriate
 equivalents for CLI/library/pipeline projects):
@@ -99,6 +111,14 @@ equivalents for CLI/library/pipeline projects):
 ```
 TODO|FIXME|placeholder|not implemented|return null;|=> e\.preventDefault\(\)$
 ```
+
+## Verify-env (runtime session contract)
+
+`.potion/verify-env.md` is declaration-required: it holds either a recipe for
+how a verifier gets a live session (test account, seed command, emulator
+steps; secret values live in gitignored `.potion/verify-env.local`) or the
+single line `none-needed: <why>`. Silence is the only illegal state: planners
+refuse to schedule runtime-proof truths without it.
 
 ## Context economics
 
@@ -120,9 +140,12 @@ TODO|FIXME|placeholder|not implemented|return null;|=> e\.preventDefault\(\)$
 ├── STATE.md              # <60-line digest — see templates/STATE.md
 ├── learnings.jsonl       # append-only; newest entry wins per key
 ├── continue-here.md      # transient pause file; delete after resume
+├── verify-env.md         # runtime session recipe OR `none-needed: <why>` — never absent
+├── verify-env.local      # secret values for the recipe (gitignored)
 └── phases/NN-slug/
     ├── DISCUSSION.md     # Decisions / Claude's Discretion / Deferred
     ├── PLAN-NN.md        # the prompt an executor runs verbatim
+    ├── RUNBOOK-NN.md     # human-gate steps; numbered peer of PLAN; complete when SUMMARY-NN (type: runbook) exists
     ├── SUMMARY-NN.md     # existence of this file = plan complete
     ├── VERIFICATION.md   # ladder results + structured gaps
     └── evidence/          # runtime proof artifacts: {plan-or-cycle}-{slug}.{ext}, referenced by path from VERIFICATION.md

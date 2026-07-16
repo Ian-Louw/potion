@@ -39,6 +39,9 @@ must survive your own context being compacted mid-run.
 
 - A worker returns `CHECKPOINT` (Rule 4 / human-verify / auth wall).
 - Verification produces `human_needed` items (batch them, one stop).
+- A wave reaches a RUNBOOK whose `done_when` checks don't all pass — present
+  the remaining steps, then stop (the human acts; a later brew re-checks
+  mechanically).
 - The gap flywheel reaches cycle 3.
 - Anything would touch a Deferred item or contradict a locked Decision.
 - The user interrupts (their kill switch — honor it instantly and pause

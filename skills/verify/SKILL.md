@@ -21,17 +21,19 @@ actually exists. Task completion ≠ goal achievement.
 
 **Step 1 — Deterministic checks (you).** Target phase: the explicit argument
 if given; otherwise the current phase in STATE.md's Position. State which you
-chose. Then run the project's mechanical verifiers:
+chose. Preflight (before anything expensive): build green? test runner
+present? `.potion/verify-env.md` present and its recipe satisfiable for this
+phase's runtime truths? Record results in VERIFICATION.md's ## Preflight
+table. A runtime truth whose env check fails is COULD_NOT_CHECK(reason) NOW —
+do not spawn tools or burn a live attempt to rediscover it. verify-env
+MISSING entirely → stop; that's a /potion:discuss defect
+(declaration-required). Then run the project's mechanical verifiers:
 test suite, build, type check, lint. Then run every `type:check` learning in
 `.potion/learnings.jsonl` — those are ratchet locks. A check that MISMATCHES is
 a regression; a check whose command ERRORS is `CHECK_BROKEN` → route to
 /potion:learn for repair or tombstone, never report it as a regression.
-Check runner contract: `cmd` runs via POSIX sh from the repo root. If
-`expect` is `exit N`, compare the exit code; otherwise compare the
-command's trimmed stdout to `expect` exactly. A nonzero exit with matching
-stdout is still a MATCH — never add `|| true` to appease the runner. A
-command that cannot execute at all (tool missing, path gone) is ERROR →
-CHECK_BROKEN.
+Check runner contract: per CORE.md — MATCH on stdout/exit, CHECK_BROKEN on
+ERROR; never add `|| true`.
 
 **Step 2 — Blind static ladder (spawned verifier).** Spawn an agent:
 "First read ${CLAUDE_PLUGIN_ROOT}/core/CORE.md and
@@ -56,9 +58,12 @@ Runtime evidence column references them by path — a path is checkable, a
 claim is not. For CLI/library/pipeline
 projects, the equivalent: one real invocation / import-and-call in a scratch
 script. Also cross-check each SUMMARY's task→commit table against `git log`
-— "do not trust summaries" includes their hashes. Truths you genuinely cannot
-check become HUMAN_NEEDED with: what to test, expected result, why it needs a
-human — batched into ONE checkpoint at the end (verification fatigue is real).
+— "do not trust summaries" includes their hashes. Use the verify-env recipe to obtain the
+live session for runtime truths. A truth blocked ENVIRONMENTALLY (closed
+reasons per CORE.md: auth-wall | device-needed | build-broken | tool-missing |
+timeout | other) is COULD_NOT_CHECK(reason). A truth only a human can attest
+BY NATURE is HUMAN_NEEDED with: what to test, expected result, why. Batch both
+kinds into ONE checkpoint at the end (verification fatigue is real).
 
 **Step 4 — Verdict (you).**
 
@@ -72,12 +77,15 @@ first: harvest only what fell through during the phase, never re-log. Zero
 new entries is a valid outcome — say so explicitly. Qualifying entries then
 ride the normal promote-up bar (CORE: Cross-repo knowledge).
 
-VERIFICATION.md's verdict is `pass` ONLY when every
-truth is VERIFIED, or is HUMAN_NEEDED and the user has acknowledged it this
-cycle. STATIC_ONLY is never a final state — it is your unfinished step 3.
-Set `verified_at` by running `date -Iseconds` and pasting the output — never
-type a timestamp from memory (a hand-written one has already tripped the
-ship gate once).
+VERIFICATION.md's verdict is `pass` ONLY when every truth is VERIFIED, or
+HUMAN_NEEDED acknowledged this cycle, or COULD_NOT_CHECK explicitly CONVERTED
+by the user this cycle — conversion lands in `accepted` with reason + why +
+date. An unconverted COULD_NOT_CHECK can never pass: fix the environment or
+ask the human, in that order. STATIC_ONLY is never a final state — it is your
+unfinished step 3.
+Set `verified_at` by running `date -Iseconds` and pasting the output —
+never type a timestamp from memory (a hand-written one has already tripped
+the ship gate once).
 
 ## Report
 
@@ -124,6 +132,7 @@ a phase verdict still requires the full four steps once per cycle.
 | "I watched the workers succeed, this is a formality" | You're anchored. That's why the ladder is spawned blind. |
 | "Tests pass, ship it" | Tests prove tests. Truths are user-observable — exercise the flow. |
 | "STATIC_ONLY is basically verified" | It's your step 3 todo list, not a verdict. |
+| "I can't check it, so HUMAN_NEEDED" | Nature or circumstance? An auth wall is COULD_NOT_CHECK(auth-wall) — and it blocks pass until converted. |
 | "The check entry fails but it's probably the check's fault" | ERROR vs MISMATCH is a mechanical distinction. Make it, don't guess it. |
 
 ## Exit
