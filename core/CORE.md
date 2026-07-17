@@ -184,13 +184,18 @@ The `## Phases` list in PROJECT.md is editable: insert urgent work as
 phases are checked off, the project isn't over — `/potion:init` re-runs its
 phase-proposal step as a new cycle.
 
-**Parked ideas:** when scope creep is caught mid-work ("while I'm here…"), park
-it — one line under `## Parked` in STATE.md — and keep going. Nothing evaporates:
-`/potion:discuss` reads the parked list when framing the next phase.
-Parked also receives findings that are neither gaps nor scope creep:
-verifier judgment calls (UX opinions, non-blocking observations) and
-SUMMARY concerns no next plan consumes — one line each, tagged with the
-source (`from SUMMARY-NN`, `from cycle-N verifier`). Nothing evaporates.
+**Bucket homes:** scope creep caught mid-work ("while I'm here…") and any
+finding that is not a gap — verifier judgment calls, unconsumed SUMMARY
+concerns, vague in-scope ideas — goes to STATE.md's `## Fog` (in-scope, not
+yet precisely stateable, never pre-sliced into plans; cap 6, one line each,
+tagged with source: `from SUMMARY-NN`, `from cycle-N verifier`). Blocking
+calls needing the human go to STATE.md's `## Decision queue` instead (cap 5;
+`- {question} — added {date}, expires {date}`, default expiry added+30d;
+every discuss surfaces the full queue — expired entries are decided or
+consciously renewed, never silently carried). Consciously rejected items live
+in PROJECT.md's `## Out of scope` ledger with why — never graduates back into
+scope, checked at every discuss, written only when the human is present;
+skills never write it unilaterally. Nothing evaporates.
 
 Any skill whose exit updates STATE.md's Position also rewrites Session
 continuity to match — or sets it to 'in flow — derive from Position'.
@@ -209,6 +214,9 @@ The bar: would knowing this save 5+ minutes in a future session? Dedup is
 newest-wins by `key` — append updates, never edit (exception: past ~500 lines,
 compact the file to its deduped newest-per-key snapshot in one commit). When a
 prior learning changes your behavior, say so: "Prior learning applied: {key}."
+Any entry may carry an optional `"incident":{"date":"YYYY-MM-DD","bad":"<exact
+bad output or command>","fix":"<the delta that fixed it>"}` object — rules
+that carry their incident are stickier.
 
 `check` entries are ratchet locks — mechanically runnable preventions promoted
 from pitfalls (`cmd` + `expect`). A promoted check takes its own
@@ -252,4 +260,4 @@ an uncited claim is a defect.
 Lint guards the knowledge layer (procedure in /potion:learn): cache-side
 findings are fixed automatically by rebuilding pages from the journal;
 truth-side changes — tombstoning an entry, resolving a contradiction — are
-ALWAYS human-gated, routed to Parked with sources cited.
+ALWAYS human-gated, routed to the Decision queue with sources cited.

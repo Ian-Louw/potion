@@ -8,7 +8,7 @@
     {
       "name": "potion",
       "source": "./",
-      "version": "1.6.0",
+      "version": "1.8.0",
       "description": "The magic potion for Claude Code — a lean project framework distilled from GSD, Superpowers, and gstack. Filesystem is the memory, plans are prompts, evidence before claims."
     }
   ]

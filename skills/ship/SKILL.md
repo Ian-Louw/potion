@@ -8,6 +8,16 @@ description: Use when work is ready to leave the branch — when the user says "
 Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Ship = merge base in, prove it still works, package it
 honestly, PR.
 
+**Emission contract — the ship checklist, in order:** VERIFICATION.md
+`verdict: pass` and fresh (the gate does not negotiate); base merged, tests
+re-run POST-merge; merge-specs.sh applied — nonzero exit BLOCKS ship, the
+human resolves; changelog cross-checked so every branch commit maps to a
+bullet; version bumped if the project versions; the PR carries evidence and
+publishing stays human-gated — never force-push, never skip hooks; STATE.md
+and PROJECT.md updated. Before finishing, re-read the emitted PR body and
+changelog against this block; fix in place, or regenerate —
+at most once.
+
 ## Steps
 
 1. **Gate.** The phase's VERIFICATION.md must have `verdict: pass` (or every
@@ -23,6 +33,7 @@ honestly, PR.
 
 2. **Sync.** Detect the base branch, merge it in, resolve conflicts. Re-run the
    test suite AFTER the merge — pre-merge green proves nothing about post-merge.
+   Done when: the post-merge suite output shows green.
 
 3. **Spec merge.** `sh ${CLAUDE_PLUGIN_ROOT}/scripts/merge-specs.sh
    .potion/phases/{NN-slug}` — applies the phase's `<spec_deltas>` to
@@ -38,13 +49,14 @@ honestly, PR.
    a summary that silently drops commits is a lie of omission.
 
 6. **Version bump** if the project versions releases (patch/minor by content).
+   Done when: the version file and changelog header show the new number (or n/a).
 
 7. **Commit, push, PR.** PR body: what changed, why, verification evidence
    (test output, screenshots), deviations from plan, known concerns.
-   Never force-push; never skip hooks.
+   Never force-push; never skip hooks. Done when: the PR URL exists.
 
 8. Update STATE.md (phase shipped) and PROJECT.md (check off requirements that
-   are now true).
+   are now true). Done when: both files show it and the update is committed.
 
 ## Red flags
 

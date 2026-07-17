@@ -37,12 +37,14 @@ alone. Delete it (or move the conclusion to learnings) when closed.
 ## Method
 
 1. **Reproduce first.** Make the failure happen on demand. Can't reproduce →
-   that's the investigation, not a blocker to skip.
-2. **Read the actual error.** The full text, the stack, the line. Not the vibe.
+   that's the investigation, not a blocker to skip. Done when: Symptom holds a
+   command (or steps) that triggers the failure on demand.
+2. **Read the actual error.** The full text, the stack, the line — pasted
+   verbatim into Evidence. Not the vibe.
 3. **One hypothesis at a time**, cheapest test first. Every test's result goes
    in Evidence — including the boring ones; eliminated hypotheses are progress.
 4. **Trace, don't guess**: follow the data from where it's right to where it's
-   wrong. The boundary is the bug's home.
+   wrong. Done when: the session file names the boundary — the bug's home.
 5. Root cause proven → fix it (smallest change that kills the mechanism),
    re-run the reproduction to watch it stop, then `/potion:learn` — a root
    cause that took >5 minutes is automatically above the logging bar, and if

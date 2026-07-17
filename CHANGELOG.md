@@ -1,5 +1,66 @@
 # Changelog
 
+## 1.8.0 — 2026-07-17
+
+The knowledge-and-craft release: the unbounded Parked list is replaced by
+three bucket homes split by nature, learnings carry their originating
+incidents, every skill leads with its emission contract and ends its steps
+with checkable criteria, and the full spec tree survived its first bounded
+sweep against cited sources — clean.
+
+### Three bucket homes (Parked retired)
+- CORE.md state doctrine: out-of-scope ledger in PROJECT.md (conscious
+  rejections, human-present writes, never graduates), Fog (cap 6) and
+  Decision queue (cap 5, dated added+expires) in STATE.md; templates
+  updated, no form of the park-word remains in core/, skills/, or templates/
+  (commit 10e822e).
+- Four skills rewired from Parked routing: blocking human calls → Decision
+  queue, everything else → Fog (commits 53ea823, f23f32f).
+- This repo's own STATE.md rebuilt under the new doctrine — gist-and-link
+  decisions, 41 lines (commit ae2ef9f); PROJECT.md ledger extended with the
+  13 attested rejections (commits b7b1f35, ca7e110).
+
+### Parked triage (dogfood of the new buckets)
+- All 19 parked items triaged into a one-sitting attestation table with a
+  bucket and a why per row (commits 816bc7b, 2a8c335, b0bd3c0).
+- Attestation by delegation recorded verbatim as the human act; corrections
+  applied, buckets final; standing confirmation queued with an expiry
+  (commit 6185302).
+
+### Incident-carrying learnings
+- Learnings grammar gains an optional `incident: {date, bad, fix}` object;
+  5 existing entries backfilled from phase artifacts via same-key appends
+  (commit 223b0f8); the requirement landed in the learnings-flywheel spec
+  via the phase-12 merge machinery (commit 4b6b476).
+
+### Skill doctor (all 11 skills)
+- Emission contracts hoisted into each skill's top guaranteed-read band with
+  a bounded self-check, and every mandatory step given an observable
+  completion criterion: verify + plan (commit 20a64c5), learn + execute
+  (commit 358f184), brew reshaped as a thin composer with the watchdog
+  deduped to a pointer (commits 102dba4, 2f9d58f), discuss + init
+  (commit 4f65c5f), ship + investigate (commit 2f6280f), pause + resume —
+  no hoist needed, recorded with why (commits 812c791, 48b11b0).
+- The 150-line bar held after every edit; largest skill sits at exactly 150
+  (verify), the rest between 47 and 134.
+
+### Spec sweep (first full-tree exercise)
+- All 32 on-disk requirements re-checked against their cited source files:
+  clean sweep, 0 mismatches; SPECS_DIR-copy merge validation exit 0
+  (commits ea79e2c, 32fe0a4, 8d31cff).
+
+### Verification
+- Phase 13 verified pass, cycle 1: 24/24 truths VERIFIED with runtime
+  evidence paths, all 5 ratchet checks MATCH, 19/19 SUMMARY-cited commits
+  confirmed against git log (commit 4ca02f4).
+
+### Bookkeeping
+- Phase 13 discussion, plans, and completion markers (commits 335309e,
+  402479b, 2bb7b37).
+- Plugin manifests caught up to the changelog: 1.7.0's release commit bumped
+  only CHANGELOG.md, leaving plugin.json/marketplace.json at 1.6.0 — both
+  now carry the real version.
+
 ## 1.7.0 — 2026-07-17
 
 The living-specs release: `.potion/specs/` now carries the current truth of

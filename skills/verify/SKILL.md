@@ -6,15 +6,23 @@ description: Use after executing a phase, or whenever work is about to be declar
 # Potion Verify
 
 Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. You are the ORCHESTRATOR of
-verification, not the auditor — the static audit is done by a spawned
-verifier deliberately told nothing of executor claims. The prime directive:
+verification, not the auditor — the static audit is a spawned verifier told
+nothing of executor claims. Prime directive: **DO NOT TRUST SUMMARIES** — a
+SUMMARY documents what an agent SAID; verification checks what exists. Task
+completion ≠ goal achievement.
 
-```
-DO NOT TRUST SUMMARIES.
-```
-
-A SUMMARY documents what an agent SAID; verification checks what actually
-exists. Task completion ≠ goal achievement.
+**Verdict contract (must hold in the emitted VERIFICATION.md):**
+- Closed truth vocabulary: `VERIFIED | STATIC_ONLY | FAILED |
+  COULD_NOT_CHECK(reason) | HUMAN_NEEDED`. STATIC_ONLY is never final;
+  only your runtime step promotes a truth to VERIFIED.
+- Verdict `pass` ONLY when every truth is VERIFIED, HUMAN_NEEDED
+  acknowledged this cycle, or COULD_NOT_CHECK converted by the user this
+  cycle — an unconverted COULD_NOT_CHECK can never pass.
+- `verified_at` from fresh `date -Iseconds` — a hand-typed timestamp has
+  tripped the ship gate once already.
+- Runtime proof is an evidence path, not a claim.
+Before finishing, re-read the emitted VERIFICATION.md against this block;
+fix in place, or regenerate it — at most once.
 
 ## The protocol — four steps, fixed ownership
 
@@ -42,9 +50,9 @@ ${CLAUDE_PLUGIN_ROOT}/agents/potion-verifier.md. Audit phase {NN-slug} of
 {repo path}." + the phase's must_haves inlined + relevant locked decisions
 + the phase's `<spec_deltas>` requirement IDs and scenario text
 (delta-scoped: touched requirements only).
-Do NOT tell it what the executors claimed or what step 1 found. It writes the
-ladder results into VERIFICATION.md and returns truth statuses: `STATIC_ONLY
-| FAILED | HUMAN_NEEDED` (closed vocabulary). VERIFIED only in step 3.
+Do NOT tell it what the executors claimed or what step 1 found. Done when its
+ladder results sit in VERIFICATION.md with statuses from `STATIC_ONLY |
+FAILED | HUMAN_NEEDED` only.
 
 **Step 3 — Runtime evidence (you).** Freshness first: confirm the running
 process serves HEAD — reload/rebuild after any code change (e.g. one dev-menu
@@ -80,14 +88,9 @@ distinctive code marker, append a `type:check` witness — key
 `witness-{phase}-{slug}`, cmd a grep for the marker, expect its output.
 A few per phase, judgment yours.
 
-VERIFICATION.md's verdict is `pass` ONLY when every truth is VERIFIED, or
-HUMAN_NEEDED acknowledged this cycle, or COULD_NOT_CHECK explicitly CONVERTED
-by the user this cycle — conversion lands in `accepted` with reason + why +
-date. An unconverted COULD_NOT_CHECK can never pass: fix the environment or
-ask the human, in that order. STATIC_ONLY is never a final state — it is your
-unfinished step 3.
-Set `verified_at` from `date -Iseconds` output — never type a timestamp from
-memory (a hand-written one has already tripped the ship gate once).
+Fill verdict + `verified_at` per the contract block above. A conversion
+lands in `accepted` with reason + why + date; before asking for one, fix
+the environment or ask the human, in that order.
 
 ## Report
 
@@ -113,13 +116,12 @@ on disk — sessions `/clear` between steps). If gaps survive cycle 3, stop:
 this is a wrong-approach problem, not a persistence problem. Escalate with the
 surviving gaps and what was tried. Unbounded retry is automating drift.
 
-**Hot-loop exception.** When reproducing or re-verifying a gap needs costly
-environment setup (emulator boot, device, slow service), ONE agent may run
-the full gap cycle (investigate → gap plan → fix → re-verify) in a single
-environment session instead of four spawns. The books stay honest: debug
-file, gap PLAN, SUMMARY, evidence, and learnings land on disk exactly as the
-separated protocol would produce them; cleanup rules still apply. Use only
-when setup cost genuinely dominates.
+**Hot-loop exception.** When a gap's repro needs costly environment setup
+(emulator boot, device, slow service), ONE agent may run the full gap cycle
+(investigate → gap plan → fix → re-verify) in a single environment session
+instead of four spawns. The books stay honest: debug file, gap PLAN, SUMMARY,
+evidence, and learnings land on disk exactly as the separated protocol would
+produce them. Use only when setup cost genuinely dominates.
 
 **Quick tier (native apps).** Bundling cannot see runtime-only failures (an
 undeclared native dependency red-screens the app while `expo export` passes).
@@ -142,6 +144,7 @@ phase verdict still requires the full four steps once per cycle.
 
 Verdict per truth, gap count, evidence collected. Route non-gap findings —
 your own judgment calls and the blind verifier's non-blocking observations —
-into STATE.md's ## Parked, one line each, tagged `from cycle-N verifier`.
+into STATE.md's ## Fog, one line each, tagged `from cycle-N verifier` —
+blocking human calls go to ## Decision queue with added/expires dates instead.
 Nothing evaporates. Clean → `/potion:ship`. Gaps → `/potion:plan` gaps mode
 (mention the cycle number).

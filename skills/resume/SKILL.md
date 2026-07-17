@@ -10,17 +10,20 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Restore position from disk, verify
 ## Steps
 
 1. Read `.potion/STATE.md`. If `.potion/continue-here.md` exists, read it too.
+   Done when: both are loaded (or continue-here.md's absence is noted).
 
 2. **Verify against ground truth.** The continue-here table lists commit hashes —
    confirm they exist in `git log`. Check `git status` for uncommitted work the
    pause didn't capture, and `git status .potion/` for merge-conflict markers
    (another session or branch touched the state — stop and show the user before
    proceeding). Disk claims, git confirms. On mismatch, show the user
-   both and ask which reality wins; never silently pick one.
+   both and ask which reality wins; never silently pick one. Done when: every
+   listed hash is found in `git log` and `.potion/` shows no conflict markers.
 
 3. Surface the top 3 relevant learnings from `.potion/learnings.jsonl` (newest
    wins per key; skip entries whose `files` no longer exist — flag those as stale).
    When one changes your behavior, say "Prior learning applied: {key}."
+   Done when: up to 3 keys are named in the brief (or none exist, and you say so).
 
 4. Brief the user in 5 lines: position, last session's stopping point, decisions
    made there, the next action. If continue-here.md's `Dirty tree` field records
@@ -32,8 +35,9 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Restore position from disk, verify
    recorded `Status before pause` value (closed vocabulary — never invent a
    status). If the field is missing (pre-fix pause file), derive: unexecuted
    PLAN with no SUMMARY → executing; all SUMMARYs present, no VERIFICATION
-   verdict → verifying; else planning.
-   Commit: `chore(potion): resume`.
+   verdict → verifying; else planning. Done when: continue-here.md is gone,
+   STATE.md's status is a closed-vocabulary value, and `git log -1 --oneline`
+   shows `chore(potion): resume`.
 
 ## Red flags
 

@@ -8,11 +8,16 @@ description: Use when something non-obvious was discovered the hard way — a pi
 Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. The compounding loop: what one session learns, every
 future session knows.
 
-## The bar
-
-Would knowing this save 5+ minutes in a future session? No → don't log it.
-Also don't log what the repo already records (code structure, git history,
-CLAUDE.md content).
+**Entry contract (must hold in every appended journal line):**
+- Grammar: one JSON object per line — `type`, `key`, `insight`,
+  `confidence`, `files`, `ts`, optional `"incident":{date,bad,fix}`.
+- The bar: would this save 5+ minutes in a future session? No → don't log.
+  Don't log what the repo already records (code, git history, CLAUDE.md).
+- Key discipline: newest-wins dedup per key — update by appending the same
+  key, never editing; a promoted check takes its OWN `check-{source-key}`
+  key, never the source pitfall's.
+Before finishing, re-read the appended entry against this block; fix in
+place, or regenerate it — at most once.
 
 ## Logging
 
@@ -23,12 +28,15 @@ Append one line to `.potion/learnings.jsonl`:
 ```
 
 - `type`: per CORE.md's canonical list (includes `check` and `tombstone`)
-- `key`: stable kebab-case id. **Dedup is newest-wins by key** — to update or
-  correct a learning, append a new line with the same key. Never edit the file
-  (one exception, in CORE.md: compaction past ~500 lines).
+- `key`: stable kebab-case id; discipline per the entry contract above (the
+  one edit exception, in CORE.md: compaction past ~500 lines).
 - `files`: backpointers used for staleness — if those files disappear, the
   learning is suspect.
 - `confidence`: 1-10. Raise it (append) when the learning proves out again.
+- `incident`: optional — `"incident":{"date":"YYYY-MM-DD","bad":"<exact bad
+  output or command>","fix":"<the delta that fixed it>"}`. Rules that carry
+  their incident are stickier. Forward-only, plus backfill where the details
+  already sit in artifacts.
 
 ## Promote up
 
@@ -53,10 +61,9 @@ matches when the pitfall recurs — promote it by appending a `check` entry:
 {"type":"check","key":"check-expo-metro-cache","insight":"stale bundle after branch switch","cmd":"grep -q '\\-\\-clear' package.json","expect":"match","ts":"2026-07-03"}
 ```
 
-A promoted check takes its OWN key, conventionally `check-{source-key}` —
-never reuse the source pitfall's key, because newest-wins dedup and compaction
-operate per key with no type scoping: a shared key shadows one entry and
-compaction deletes it.
+Why `check-{source-key}` gets its own key: dedup and compaction operate per
+key with no type scoping — a shared key shadows one entry and compaction
+deletes it.
 
 Checks run under CORE's check-runner contract: POSIX sh at repo root;
 `exit N` compares exit code, anything else compares trimmed stdout
@@ -106,9 +113,9 @@ Actions — the line that may not be crossed:
   affected page(s) whole from the journal — refreshing cache is not editing
   knowledge.
 - Truth-side (contradictions; any urge to tombstone or reword a journal
-  entry): NEVER self-resolve. Route to STATE.md `## Parked`, one line, both
-  sources cited (`lint: X contradicts Y — human call`). The next
-  /potion:discuss tables it.
+  entry): NEVER self-resolve. Route to STATE.md `## Decision queue` (added +
+  expires dates), one line, both sources cited (`lint: X contradicts Y —
+  human call`). The next /potion:discuss tables it.
 
 Report as a table: hunt | location | finding | action (rebuilt / routed /
 none). Zero findings is a valid outcome — say 'lint clean' explicitly.

@@ -12,7 +12,7 @@ not by archaeology.
 
 1. **Infer, don't interrogate.** Position, branch, completed tasks and their commit
    hashes come from git state and this conversation. Only ask if something genuinely
-   cannot be inferred.
+   cannot be inferred. Done when: position, branch, and task hashes are in hand.
 
 2. Write `.potion/continue-here.md` from `${CLAUDE_PLUGIN_ROOT}/templates/continue-here.md`:
    completed-tasks table **with commit hashes** (git is ground truth for the
@@ -23,21 +23,25 @@ not by archaeology.
 
    Fill `Status before pause` with STATE.md's current status (closed vocabulary:
    planning | executing | verifying | blocked) — capture it now, before step 3
-   overwrites it with `paused`.
+   overwrites it with `paused`. Done when: `.potion/continue-here.md` exists
+   with every template field filled — no `{placeholders}` remain.
 
 3. **Uncommitted source edits?** Commit them as
    `wip(potion): paused mid {phase}-{plan} task {N}` — never amend, never stash
    (commits are potion's ground truth; a stash is invisible to a fresh session).
    Record the WIP hash and a one-line description of what's half-done in
    continue-here.md's `Dirty tree` field. Clean tree → write `clean`.
+   Done when: `git status --short` prints nothing outside `.potion/`.
 
 4. Update STATE.md: status `paused`, Session Continuity block pointing at
-   continue-here.md.
+   continue-here.md. Done when: STATE.md's status line reads `paused`.
 
-5. Commit both: `chore(potion): pause checkpoint`.
+5. Commit both. Done when: `git log -1 --oneline` shows
+   `chore(potion): pause checkpoint`.
 
 6. **Process hygiene:** stop any dev servers or watchers this session started,
-   or hand over PIDs and kill commands explicitly.
+   or hand over PIDs and kill commands explicitly. Done when: nothing this
+   session started is still running, or the PIDs are in the exit line.
 
 ## Exit
 

@@ -10,6 +10,18 @@ crank automated: plan → execute → verify → gap-cycle, repeating until the
 phase passes or a human gate fires. You are the loop operator — you spend your
 context on routing and judgment, never on implementation or auditing.
 
+**Loop contract (must hold in how the loop runs, stops, and reports):**
+- Compose, never inline: plan / execute / verify rules apply verbatim from
+  their own skills — brew adds only sequencing, gates, and budgets.
+- Stop mid-loop ONLY at a human gate: worker CHECKPOINT, batched
+  human_needed items, an unpassed RUNBOOK, gap cycle 3, a Deferred or
+  locked-Decision touch, or a user interrupt. Everything else — Rules 1-3
+  deviations, gap plans, re-verification, watchdog respawns — proceeds
+  without asking; "shall I continue?" between stages defeats brew.
+- Between stages, re-derive position from disk, never from memory.
+Before finishing (or stopping at a gate), re-read your report against this
+block; fix in place, or regenerate it — at most once.
+
 ## Preconditions (all hard)
 
 1. `.potion/` exists and STATE.md points at the target phase.
@@ -47,22 +59,13 @@ must survive your own context being compacted mid-run.
 - The user interrupts (their kill switch — honor it instantly and pause
   cleanly: current stage finishes its disk writes, then /potion:pause).
 
-Everything else — deviations under Rules 1-3, gap plans, re-verification,
-watchdog respawns — proceeds without asking. Asking "shall I continue?"
-between stages defeats brew's purpose.
+## Watchdog
 
-## Watchdog (applies to every spawned agent)
-
-A worker with no new commits AND no return for ~15 minutes of wall clock:
-1. Check disk first — `git log` and the phase directory may show it mid-task.
-2. Nudge once (message the agent with what you observe on disk).
-3. Still silent → spawn a FRESH worker on the same plan. This is safe by
-   design: its first act is the idempotency check (commits already made are
-   never redone). Never have two live workers on one plan — confirm the stall
-   before respawning.
-
-If the harness supports scheduled wakeups, prefer a long fallback wakeup
-(~20 min) over polling while waves run — workers notify on completion.
+/potion:execute's watchdog (disk check → one nudge → one fresh respawn,
+never two live workers on a plan) applies to EVERY agent brew spawns,
+verifier included. If the harness supports scheduled wakeups, prefer a long
+fallback wakeup (~20 min) over polling while waves run — workers notify on
+completion.
 
 ## Budgets (inherited, enforced here)
 

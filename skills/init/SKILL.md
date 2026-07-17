@@ -7,6 +7,15 @@ description: Use when starting Potion on a project for the first time — when t
 
 Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Creates the project's durable memory.
 
+**Emission contract — all of these exist before exit:** `.potion/PROJECT.md`
+(goals, Key Decisions, Out of Scope, `## Phases` checklist);
+`.potion/STATE.md` (position: phase 1); `.potion/verify-env.md` (recipe or
+`none-needed: <why>` — never absent); `.potion/phases/01-{slug}/` directory;
+the `merge=union` line in `.gitattributes`; the `verify-env.local` line in
+`.gitignore`; the init commit. Before finishing, re-read the emitted files
+against this block; fix in place, or regenerate —
+at most once.
+
 ## Guards
 
 - Not a git repository → offer `git init` (Potion requires git; commits are its
@@ -30,7 +39,8 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Creates the project's durable memo
 
 1. **Understand the project.** If the repo has code, spend a few minutes mapping it
    (stack, entry points, conventions) — do not launch a research pipeline; one pass
-   is enough. If it's empty, this is greenfield.
+   is enough. If it's empty, this is greenfield. Done when: you can state
+   stack + entry points in two lines (or "greenfield").
 
 2. **Interview — one question at a time**, per the question contract. You need:
    - What is this? (2-3 sentences)
@@ -40,14 +50,16 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Creates the project's durable memo
    - How does a verifier get a live runtime session? (test account / seed
      command / emulator recipe — or explicitly nothing: a no-auth CLI needs
      only `none-needed: <why>`.)
-   Stop asking as soon as you can write a PROJECT.md the user would sign.
+   Done when: every bullet above has an answer you could paste into
+   PROJECT.md — then stop asking.
    If the user asks whether the idea is worth building, be direct — interest
    is not demand; behavior counts, money counts. Unsolicited, keep it to one
    sentence at most.
 
 3. **Propose phases.** Break active requirements into 2-6 phases, each with a goal
    stated as an outcome ("users can authenticate") not an activity ("build auth").
-   Present the list, adjust once, lock it.
+   Present the list, adjust once, lock it. Done when: the user has approved
+   the phase list.
 
 4. **Write the state** from `${CLAUDE_PLUGIN_ROOT}/templates/`:
    - `.potion/PROJECT.md` — filled template, phases appended as a `## Phases` list
@@ -56,13 +68,17 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Creates the project's durable memo
    - `.potion/verify-env.md` — from `templates/verify-env.md`, filled with the
      interview answer (recipe or `none-needed: <why>`).
    - `.potion/phases/01-{slug}/` — empty directory for the first phase.
+   Done when: all four paths exist on disk.
 
 5. **Housekeeping:** append `.potion/learnings.jsonl merge=union` to
    `.gitattributes` (append-only files merge sanely across branches). Append
    `.potion/verify-env.local` to `.gitignore` (create `.gitignore` if absent)
    — one line, with the comment "secret values for the runtime session recipe".
+   Done when: `grep merge=union .gitattributes` and
+   `grep verify-env.local .gitignore` each print one line.
 
-6. **Commit:** `chore(potion): initialize project memory`.
+6. **Commit.** Done when: `git log -1 --oneline` shows
+   `chore(potion): initialize project memory`.
 
 ## Exit
 

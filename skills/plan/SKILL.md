@@ -8,6 +8,17 @@ description: Use when a phase needs an execution plan — when the user says "pl
 Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Produces PLAN files that are executed **verbatim** by fresh
 agents. A plan is a prompt, not a document.
 
+**Plan-emission contract (must hold in every emitted PLAN/RUNBOOK):**
+- The specificity test: could a different Claude instance execute this
+  without asking a single question? Placeholders ("TBD", "appropriate
+  error handling", "similar to task N") are plan failures.
+- Frontmatter: `wave = max(deps)+1`; `files_modified` exclusive across
+  same-wave plans; 2-3 tasks per plan.
+- Numbering: PLAN-NN and RUNBOOK-NN share one pool — the next number is
+  one past the highest existing of either; never reuse a number.
+Before finishing, re-read each emitted plan against this block; fix in
+place, or regenerate it — at most once.
+
 ## The Iron Law
 
 ```
@@ -24,7 +35,8 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
 ## Steps
 
 1. Read STATE.md, PROJECT.md, and the phase's DISCUSSION.md. Decisions are locked;
-   Deferred is untouchable. If DISCUSSION.md doesn't exist, run /potion:discuss first.
+   Deferred is untouchable. Done only when `phases/NN-slug/DISCUSSION.md`
+   exists — absent means run /potion:discuss first.
 
    **Gate preflight:** read DISCUSSION.md's `gates:` frontmatter. Work blocked on
    a `hitl` gate becomes RUNBOOK-{NN}.md (from `${CLAUDE_PLUGIN_ROOT}/templates/RUNBOOK.md`)
@@ -52,10 +64,10 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    read the page — synthesis beats fragments; the jsonl grep remains the
    fallback when no page matches.
 
-3. **Write plans** from `${CLAUDE_PLUGIN_ROOT}/templates/PLAN.md`: 2-3 tasks each, 15-60 minutes of agent
-   time per task, exclusive `files_modified` per same-wave plan, `wave = max(deps)+1`.
-   Numbering: PLAN-NN and RUNBOOK-NN share one pool — the next number is one past
-   the highest existing PLAN-NN or RUNBOOK-NN.
+3. **Write plans** from `${CLAUDE_PLUGIN_ROOT}/templates/PLAN.md`: 15-60
+   minutes of agent time per task; frontmatter, task count, and numbering per
+   the emission contract above. Done when every PLAN-NN.md / RUNBOOK-NN.md
+   exists on disk in `phases/NN-slug/`.
 
    **Verify-env refusal:** before writing any plan whose truths need a live
    session (login flows, on-device behavior, served UI — not CLI invocations or
@@ -74,10 +86,6 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    repo for intent will reconstruct the wrong intent. Write for an engineer with
    zero context and questionable taste.
 
-   Placeholders are plan failures: "TBD", "add appropriate error handling",
-   "similar to task N". The specificity test: could a different Claude instance
-   execute this without asking a single question?
-
    Separate the two tiers in `<context>`: LOCKED product decisions (from
    DISCUSSION.md) versus TECHNICAL NOTES (your best current understanding of
    APIs and signatures). You WILL sometimes be wrong about APIs — that's fine
@@ -93,10 +101,10 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    - Does anything contradict a locked Decision or touch a Deferred item?
    - Are names consistent across tasks? (`clearLayers()` in task 1 but
      `clearAllLayers()` in task 3 is a bug you're shipping.)
-   Fix findings surgically — surgeon, not architect. If issues survive 3 passes,
-   show them to the user.
+   Fix findings surgically — surgeon, not architect. Done when a pass yields
+   zero findings; if issues survive 3 passes, show them to the user.
 
-5. Update STATE.md. Commit: `docs(potion): phase NN plans`.
+5. Update STATE.md. Done when `git log -1` shows `docs(potion): phase NN plans`.
 
 ## Gaps mode
 
@@ -106,11 +114,9 @@ self-check (step 4) and STATE.md update + commit (step 5) ALWAYS apply.
 
 When invoked with gaps (from /potion:verify), read the structured gaps in
 VERIFICATION.md frontmatter and write fix plans (`gap_closure: true`) targeting
-exactly those gaps — nothing else. Numbering: continue the phase's sequence —
-next number after the highest existing PLAN-NN or RUNBOOK-NN (runbooks occupy
-numbers in the same pool), never reuse (a reused number
-whose SUMMARY exists is silently skipped by execute; abort if `SUMMARY-{NN}`
-already exists for your chosen number). Check VERIFICATION.md's `cycle`: if
+exactly those gaps — nothing else. Numbering per the emission contract (a
+reused number whose SUMMARY exists is silently skipped by execute; abort if
+`SUMMARY-{NN}` already exists for your chosen number). Check VERIFICATION.md's `cycle`: if
 this would be cycle 4, stop and escalate instead — the flywheel budget is 3.
 
 ## Red flags

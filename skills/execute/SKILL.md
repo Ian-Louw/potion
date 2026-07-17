@@ -9,6 +9,18 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. You are the ORCHESTRATOR. You stay
 group into waves, spawn workers, route their returns. You do not implement.
 Context budget: ~15% you, 100% fresh per worker.
 
+**Orchestration contract (must hold in what you emit):**
+- Worker prompts are pointers: plan path + ≤10-line digest, never pasted
+  plan text — the urge to add prompt context means the plan file is
+  deficient; fix the plan on disk instead.
+- Worker returns are ≤15 lines: status, commits, one-line verification
+  result, deviations, concerns.
+- STATE.md position is updated after EVERY wave.
+- Quick mode ONLY when all four hold: ≤1 file, ≤~30 changed lines,
+  reversible in one revert, unnamed in DISCUSSION.md Decisions/Deferred.
+Before finishing, re-read the emitted worker prompts and STATE update
+against this block; fix in place, or regenerate — at most once.
+
 ## Steps
 
 1. **Discover.** Read STATE.md Position — the target phase is the current
@@ -30,15 +42,12 @@ Context budget: ~15% you, 100% fresh per worker.
    - Prompt = "First, read ${CLAUDE_PLUGIN_ROOT}/core/CORE.md (your contract)
      and ${CLAUDE_PLUGIN_ROOT}/agents/potion-worker.md (your role). Then read
      your plan at {absolute path to PLAN-NN.md} and execute it verbatim." +
-     a ≤10-line digest: repo path, current STATE position, and any concerns
+     a ≤10-line digest: repo path, current STATE position, any concerns
      carried from prior plans + up to 3 learning keys relevant to the plan's
      files (`{key}: {one-line insight}`) pulled from `.potion/learnings.jsonl`
-     — pointers, not pastes; skip the line if none match. Workers share the
-     filesystem — point, don't paste. The plan file itself must already be self-contained; if you feel
-     the urge to add context to the prompt, the plan is deficient — fix the
-     plan file instead, so the record on disk matches what ran.
-   - Workers write SUMMARY to disk and return ≤15 lines: status, commits,
-     one-line verification result, deviations, concerns.
+     — skip the line if none match. Pointer shape per the contract above.
+   - Done when each worker's SUMMARY is on disk and its ≤15-line return is
+     routed.
 
 4. **Route returns** by status (see CORE.md table). On `CHECKPOINT` returns
    (Rule 4 deviation or human-verify), present the worker's completed-tasks table,
@@ -64,14 +73,13 @@ steps the human completed between sessions confirm mechanically.
    check. One respawn per plan; a second stall → BLOCKED, escalate. Never two
    live workers on one plan.
 
-5. **After each wave:** update STATE.md position. After the last wave:
-   `docs(potion): phase NN complete` commit.
+6. **After each wave:** update STATE.md position. After the last wave, done
+   when `git log -1` shows `docs(potion): phase NN complete`.
 
 ## Small-task escape hatch (quick mode)
 
-A task qualifies for inline execution ONLY if all four hold: ≤1 file, ≤~30
-changed lines, reversible in one revert, and not named in any DISCUSSION.md
-Decisions or Deferred bucket. Still mandatory: atomic commit, evidence gate
+Qualifying conditions: the four in the orchestration contract above — all
+must hold. Still mandatory: atomic commit, evidence gate
 before claiming done, one-line note in STATE.md. Quick tasks skip
 `<spec_deltas>` unless they change specced behavior — then write the delta and
 run `scripts/merge-specs.sh` in the same session. The ratchet: the third
@@ -89,7 +97,7 @@ run /potion:discuss.
 ## Exit
 
 Phase report: plans completed, deviations, concerns. Route every SUMMARY
-concern that no next plan consumes into STATE.md's ## Parked, one line each,
+concern that no next plan consumes into STATE.md's ## Fog, one line each,
 tagged `from SUMMARY-NN`. Nothing evaporates. Next up: `/potion:verify`
 — suggest `/clear` first: verification must not be anchored by what this
 session watched the workers claim.
