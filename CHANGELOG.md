@@ -1,5 +1,48 @@
 # Changelog
 
+## 1.10.0 — 2026-07-18
+
+The live-proof release: every enforcement hook has now been observed firing
+on real events in real sessions — no more synthetic-stdin-only proofs — and
+the two cycle-1 dogfood burrs in the pair skill and the check-runner contract
+are closed. Phase 15 converts the campaign's last two unchecked field-evidence
+requirements; verified in one cycle, 8/8 truths.
+
+### Pairing exit hardening (behavior change)
+- Exit step 7 now tolerates a non-init-shaped STATE.md — missing sections
+  (Fog, Session continuity) are appended in minimal form, never assumed
+  present; new step 8 explicitly commits the exit bookkeeping (SUMMARY,
+  STATE.md, marker deletion), screened by the scrubber like any commit
+  (commit d638dc2; spec `pairing-mode/pair-exit-emits-summary` extended).
+
+### Check-runner contract (documentation)
+- `scripts/ci-verify.sh` header now states that sh-reserved exits 126/127
+  ALWAYS classify BROKEN regardless of stdout, and forbids checks that
+  intentionally exit 126/127 (use 1-125) — code behavior unchanged (commit
+  879e110; new spec `ci-verification/broken-reserved-exit-codes`).
+
+### Live hook proofs (evidence, phases/15-live-proof/evidence/)
+- Stop-hook drift nudge observed live in a real headless session: drifted
+  fixture surfaced both defects (STATE over cap, PLAN with commits but no
+  SUMMARY), one-shot retry honored; clean-fixture control stayed silent
+  (commits 96bedb4, a27eb5f).
+- SessionStart startup digest observed injecting position context into a
+  real session (commit a27eb5f).
+- Secret scrubber observed blocking a REAL commit of a planted fake sbp_
+  token in a live session — fixture git log proves nothing landed; it also
+  live-blocked this phase's own plan commit when a matching literal briefly
+  existed in PLAN-03 (commit 148e653).
+- Compaction re-grounding digest proven headless-untriggerable with three
+  documented attempts — typed COULD_NOT_CHECK, hitl observation queued as
+  the remaining route (commit 8e6924f).
+
+### Process (bookkeeping commits)
+- Phase 15 discussion, plans, worker summaries, cycle-1 verification (8/8
+  VERIFIED, independent orchestrator re-runs + pair-exit enactment), spec
+  merge, and 4 harvested learnings + 2 new ratchet witnesses (now 10 checks)
+  (commits 230bb25, da8b155, 074c39a, 3bb5582, 6c5dd9f, eaf587d, 42fb57a,
+  6e36896).
+
 ## 1.9.0 — 2026-07-18
 
 The pairing-and-CI release: a hands-on pairing lane with honest exits, a

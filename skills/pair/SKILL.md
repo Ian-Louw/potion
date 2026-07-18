@@ -44,8 +44,16 @@ Triggered by the user saying "exit" / "wrap up" or invoking the skill with exit.
    best proves the session's main change; capture command + output.
 5. Write the SUMMARY (numbering and body below).
 6. Delete `.potion/pairing.md`.
-7. Update STATE.md: Position "Last activity" line + Session continuity;
-   route any unconsumed concerns to `## Fog` tagged `from SUMMARY-NN`.
+7. Update STATE.md tolerantly — the file may not be init-shaped: update the
+   Position "Last activity" line and `## Session continuity` when present;
+   append any missing section in minimal form instead of assuming it exists
+   (including `## Fog` if concerns need routing). Route unconsumed concerns
+   to `## Fog` tagged `from SUMMARY-NN`.
+8. Commit the exit bookkeeping — the SUMMARY file, STATE.md, and the
+   pairing.md deletion: `git add -A .potion && git commit -m
+   "docs(potion): pairing exit SUMMARY-{NN}"`. The scrubber hook screens
+   this commit like any other; if it blocks, fix the flagged content —
+   never bypass.
 
 ### SUMMARY numbering
 

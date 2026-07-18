@@ -11,6 +11,9 @@
 #   - otherwise        -> compare trimmed stdout to expect exactly
 #     (a nonzero exit with matching stdout is still a MATCH)
 #   - command cannot execute at all -> BROKEN (warning, never a failure)
+#   - sh-reserved exits 126 (not executable) / 127 (not found) ALWAYS
+#     classify BROKEN regardless of stdout — never write a check that
+#     intentionally exits 126/127; intentional nonzero exits use 1-125.
 # Output: one `CHECK MATCH|MISMATCH|BROKEN {key}` line per check, then a
 # final `RESULT pass|fail matched=N mismatched=N broken=N` line.
 # Exit 1 iff at least one check MISMATCHES; BROKEN alone still exits 0.
