@@ -9,8 +9,14 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Restore position from disk, verify
 
 ## Steps
 
-1. Read `.potion/STATE.md`. If `.potion/continue-here.md` exists, read it too.
-   Done when: both are loaded (or continue-here.md's absence is noted).
+1. Read `.potion/STATE.md`. If `.potion/continue-here.md` exists, read it
+   too. If `.potion/pairing.md` exists, a pairing session died un-exited —
+   before anything else, offer the retroactive exit: run `/potion:pair exit`
+   against the marker's recorded baseline (the baseline..HEAD commit list
+   still computes), which emits the missing SUMMARY and deletes the marker;
+   if the user declines, note the surviving marker in the step-4 brief and
+   continue. Done when: state files are loaded and any pairing marker is
+   either retroactively exited or explicitly deferred.
 
 2. **Verify against ground truth.** The continue-here table lists commit hashes —
    confirm they exist in `git log`. Check `git status` for uncommitted work the

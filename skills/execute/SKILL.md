@@ -33,16 +33,23 @@ against this block; fix in place, or regenerate — at most once.
 2. **Wave up.** Group remaining plans by `wave` frontmatter. Within a wave, plans
    own disjoint `files_modified` — spawn them as parallel agents in one message.
    Between waves, block. No polling, no runtime dependency analysis: the planner
-   already did it. Parallel workers share one git index: commits will
-   occasionally collide on `index.lock` — that's expected contention, workers
-   retry (never delete the lock). If a wave has 4+ plans, prefer isolated
-   worktrees per worker and merge after the wave.
+   already did it. A wave with 2+ plans gets one isolated worktree + temp
+   branch per worker — from the repo root, per worker:
+   `git worktree add ../{repo-dirname}-wt-{NN} -b potion/wave{W}-plan{NN}`
+   (branches from current HEAD; the sibling path keeps the repo clean, no
+   gitignore needed). A 1-plan wave runs in place in the main working tree.
+   Fallback if worktrees are unavailable: parallel workers share one index —
+   `index.lock` collisions are expected contention; workers retry, never
+   delete the lock. Done when every remaining plan sits in exactly one wave
+   and each worker of a 2+ wave has its own worktree and branch.
 
 3. **Spawn workers.** For each plan:
    - Prompt = "First, read ${CLAUDE_PLUGIN_ROOT}/core/CORE.md (your contract)
      and ${CLAUDE_PLUGIN_ROOT}/agents/potion-worker.md (your role). Then read
      your plan at {absolute path to PLAN-NN.md} and execute it verbatim." +
-     a ≤10-line digest: repo path, current STATE position, any concerns
+     a ≤10-line digest: repo path (when isolation is on, this IS the worker's
+     worktree path, and the plan path is the worktree's copy), current STATE
+     position, any concerns
      carried from prior plans + up to 3 learning keys relevant to the plan's
      files (`{key}: {one-line insight}`) pulled from `.potion/learnings.jsonl`
      — skip the line if none match. Pointer shape per the contract above.
@@ -53,7 +60,9 @@ against this block; fix in place, or regenerate — at most once.
    (Rule 4 deviation or human-verify), present the worker's completed-tasks table,
    collect the user's answer, then spawn a **fresh** worker whose prompt includes
    that table — its first act is `git log --oneline -10` to verify those commits
-   exist. Fresh agents with explicit state beat resumed agents with stale context.
+   exist. Fresh agents with explicit state beat resumed agents with stale
+   context. Done when every worker return is routed per the CORE.md table and
+   no CHECKPOINT is left unanswered.
 
 ## Runbooks (human gates in the wave)
 
@@ -71,10 +80,21 @@ steps the human completed between sessions confirm mechanically.
    install), nudge it once with what you observe, and only if still silent
    spawn a fresh worker on the same plan — safe because of the idempotency
    check. One respawn per plan; a second stall → BLOCKED, escalate. Never two
-   live workers on one plan.
+   live workers on one plan. Done when the wave has zero unaccounted-for
+   workers: every plan has a routed return, a live worker, or a BLOCKED
+   escalation.
 
-6. **After each wave:** update STATE.md position. After the last wave, done
-   when `git log -1` shows `docs(potion): phase NN complete`.
+6. **After each wave:** in the main working tree, merge each worker branch
+   SEQUENTIALLY — `git merge --no-ff potion/wave{W}-plan{NN}`, one at a time,
+   never octopus (learning: octopus-merge-divergent-bases); both-sides-keep
+   conflicts resolve by keeping both additions. Only after every branch has
+   landed, compute progress from SUMMARY existence and update STATE.md
+   position (learning: worktree-stale-base). Cleanup per worker:
+   `git worktree remove ../{repo-dirname}-wt-{NN}` then
+   `git branch -d potion/wave{W}-plan{NN}`. A failed plan is discarded, not
+   merged: remove its worktree, `git branch -D` its branch — the main branch
+   stays untouched. After the last wave, done when `git log -1` shows
+   `docs(potion): phase NN complete`.
 
 ## Small-task escape hatch (quick mode)
 

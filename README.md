@@ -16,7 +16,7 @@ graph LR
 ```
 
 Plus utilities: `/potion:pause` · `/potion:resume` · `/potion:learn` ·
-`/potion:investigate` — and **`/potion:brew`** runs the whole crank
+`/potion:investigate` · `/potion:pair` — and **`/potion:brew`** runs the whole crank
 end-to-end, stopping only at human gates.
 
 **Eleven skills. Two agents. One hook.** No ceremony. This repo's own

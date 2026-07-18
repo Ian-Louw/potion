@@ -1,5 +1,63 @@
 # Changelog
 
+## 1.9.0 — 2026-07-18
+
+The pairing-and-CI release: a hands-on pairing lane with honest exits, a
+generic ratchet-check runner wired into two-layer GitHub CI (mechanical on
+every push, agentic strictly opt-in), and worktree isolation as the default
+for parallel execution waves. Phase 14 closes the Best-Potion Campaign's
+planned arc — verified in two cycles with the one found gap closed and
+dogfooded.
+
+### CI verification (new capability)
+- `scripts/ci-verify.sh`: generic runner for every `type:check` learning —
+  one machine-readable `CHECK MATCH|MISMATCH|BROKEN` line per check, exit
+  nonzero exactly on MISMATCH, BROKEN as warning, missing learnings file is
+  a clean pass (commits 2b0db82, 513f4ef); sh exit 126/127 classified as
+  BROKEN, never MISMATCH (commit 263f1e4).
+- Mechanical workflow `.github/workflows/ci.yml` on every push/PR: ratchet
+  suite + vocabulary grep + hook syntax checks (commit e0a1969).
+- Agentic workflow `.github/workflows/agentic-verify.yml`: opt-in only
+  (workflow_dispatch or `agentic-verify` label, never plain push), runs the
+  blind verifier headlessly, uploads a verdict artifact, fails on FAILED
+  truths (commit e14adde). Ships inert by descope: no hosted API key; an
+  early-fail guard names the missing secret (commits f398768, dbee1db).
+
+### Worktree-default execution (new capability)
+- 2+ parallel plans in a wave each get an isolated worktree + temp branch by
+  default (the old 4+ heuristic is gone); merge-back is sequential --no-ff,
+  progress/STATE update only after all land, failed plans discard without
+  touching main (commit 8ab57ae).
+- Execute steps 2, 4, 5 now each end with a checkable "Done when" (commit 0b28fe3).
+
+### Pairing mode (new capability)
+- `/potion:pair` skill: session-long hands-on lane — Enter writes a transient
+  `.potion/pairing.md` marker, Exit emits a `type: pairing` SUMMARY with
+  intent, baseline..HEAD commit list, mini-verify results (full ratchet suite
+  via ci-verify.sh) and one fresh evidence command, then deletes the marker
+  (commit a85d852); README utilities list names it (commit 19944e3).
+- Dead-session recovery wired at BOTH entry points: resume step 1 now checks
+  for a stale pairing marker and offers the retroactive exit before normal
+  resume proceeds (commit dc36df5), and pair's Enter step references resume's
+  real check instead of aspirational wording (commit 83a2f4e) — the gap
+  cycle-1 verification caught, closed and dogfooded in cycle 2.
+
+### Specs
+- Phase-14 spec merge applied 8 delta ops, creating three capability trees:
+  ci-verification, worktree-execution, pairing-mode; the duplicate
+  pair-stale-session-recovery ops were collapsed to one ADDED at the ship
+  gate — the merge-specs BLOCK path fired live for the first time and held
+  (commit d430463).
+
+### Process record
+- Phase 14 discussion, plans, worker summaries, wave/state bookkeeping,
+  verification cycles 1 (fail: 1 gap) and 2 (pass; witness-14 ratchet check
+  added, suite now 8 checks), and the gaps-cycle plan: commits abf1be3,
+  fade70e, 79f9871, f398768, a62a725, 8b51ad3, fac1a29, bdbd1d5, 3cd138d,
+  a9edc93, f0271ec, 5fecd2e, 905af94, a2427e9.
+- `.potion/` stays committed as-is — privacy question raised and resolved
+  (commit f13eebf).
+
 ## 1.8.0 — 2026-07-17
 
 The knowledge-and-craft release: the unbounded Parked list is replaced by
