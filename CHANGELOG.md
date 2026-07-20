@@ -1,5 +1,68 @@
 # Changelog
 
+## 1.12.0 — 2026-07-20
+
+The liveness release: repos that look busy but aren't get caught. A
+two-signal staleness beacon fires at session start when STATE claims motion
+nothing backs, a completion claim without a verification verdict trips the
+stop nudge, and every human gate now carries a mandatory expiry with a
+decide-renew-or-abandon lifecycle. All warn-posture, all fail-open — potion
+signals stalls, it never traps a session. Verified in one cycle, 14/14
+truths, all runtime evidence from fresh synthetic fixtures.
+
+### Staleness beacon (behavior change)
+- New session-start leg: two-signal staleness — STATE claims
+  executing/verifying/planning but the last commit is >=3 days old
+  (abandonment), or repo commits continue while `.potion/` sits untouched
+  >=3 days (potion bypassed) — each with a distinct warning and a
+  pause-or-resume offer; 3 days is a fixed constant, no config knob
+  (b8c89a7; spec `enforcement-hooks/staleness-beacon-two-signal`).
+- A STATE `Last activity` date lagging the actual last commit by >=3 days is
+  surfaced as a stale-Position line naming both dates (b8c89a7; spec
+  `enforcement-hooks/beacon-stale-position`).
+- Expired-gate scan: uncleared gates in the current phase's DISCUSSION.md or
+  RUNBOOK frontmatter whose `expires` date has passed are surfaced by name,
+  date, and source file; a runbook cleared by its SUMMARY stays silent
+  (e33ea45; spec `enforcement-hooks/beacon-expired-gates`). The gate-name
+  regex excludes newlines so multi-line frontmatter can't leak past the line
+  end (e33514d, a Rule-1 fix).
+- Proof: 7-case synthetic fixture matrix committed as evidence (453af4c);
+  plan record 6a005a6, merged 56baa31.
+
+### Completion-claim tripwire (behavior change)
+- stop-drift check 3: a STATE status claiming shipped/complete/completed/done
+  for the current phase with no `verdict:` line in that phase's
+  VERIFICATION.md blocks the stop once, naming the phase and
+  `/potion:verify`; one-shot rule and non-claiming statuses untouched,
+  fail-open (9f3a11b; specs `enforcement-hooks/stop-nudge-completion-claim`,
+  `stop-nudge-one-shot` modified).
+- Proof: 6-case synthetic payload matrix (1f9742f); summary 9550bff, merged
+  92105eb.
+
+### Gate lifecycle (behavior change)
+- Discuss gates grammar now carries `added` and `expires` on every entry —
+  expiry is mandatory; a genuinely unknowable ETA gets a review date capped
+  at 14 days out; discuss step 2 forces a decide-renew-or-abandon call on
+  every expired gate (13cf897; spec `gate-lifecycle/gate-expiry-mandatory`,
+  `expired-gate-decision`).
+- Resume sweeps expired gates and offers the blocked-PLAN retrofit: human
+  steps become a RUNBOOK, remaining agent work a follow-up PLAN, the
+  original closed by a `type: superseded` SUMMARY — declining leaves
+  everything untouched (c0a3c17; spec `gate-lifecycle/blocked-plan-retrofit`).
+- Pause surfaces "branch N commits ahead of origin" (or "no upstream")
+  before a stall is recorded — never auto-pushes — and records it in
+  continue-here.md's new `Unpushed` field; RUNBOOK template frontmatter
+  carries the gate's `expires` date for the session-start scan (265dbc9;
+  spec `gate-lifecycle/pause-unpushed-check`); summary 01fb007, merged
+  54bec67.
+
+### Process
+- Phase 18 record: discussion (a411163), plans (0b60cef), completion
+  (5bd4e07), verification cycle-1 pass 14/14 with three fresh live evidence
+  files, two harvested learnings, and three new witness checks (9da4e2e),
+  and the mechanical spec merge — 9 ops across `enforcement-hooks` and the
+  new `gate-lifecycle` capability (9dce070).
+
 ## 1.11.0 — 2026-07-20
 
 The secret-ratchet release: the scrubber can now catch human-shaped

@@ -71,6 +71,28 @@ function main() {
     }
   }
 
+  // Check 3: completion claim without a verification verdict.
+  // Status-line ONLY — Position/Stopped-at prose must never trip this.
+  const claimMatch = state.match(/^- Status:\s*(shipped|completed?|done)\s*$/im);
+  if (claimMatch) {
+    // Derive the slug independently of check 2's strict regex (looser,
+    // planTally-style — same shape session-start.js uses). No slug → skip.
+    const phaseLine = state.match(/^- Phase:.*$/m);
+    const slugMatch = phaseLine && phaseLine[0].match(/\b(\d+(?:\.\d+)?-[a-z0-9-]+)/);
+    if (slugMatch) {
+      const slug = slugMatch[1];
+      const verifPath = path.join(cwd, ".potion", "phases", slug, "VERIFICATION.md");
+      let hasVerdict = false;
+      if (fs.existsSync(verifPath)) {
+        const verif = fs.readFileSync(verifPath, "utf8");
+        hasVerdict = /^verdict:\s*"?(pass|gaps|escalated)"?/m.test(verif);
+      }
+      if (!hasVerdict) {
+        defects.push(`STATE claims '${claimMatch[1]}' for phase ${slug} but phases/${slug}/VERIFICATION.md has no verdict — run /potion:verify before claiming completion`);
+      }
+    }
+  }
+
   if (!defects.length) process.exit(0);
 
   process.stderr.write(

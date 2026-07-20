@@ -31,7 +31,13 @@ not by archaeology.
    (commits are potion's ground truth; a stash is invisible to a fresh session).
    Record the WIP hash and a one-line description of what's half-done in
    continue-here.md's `Dirty tree` field. Clean tree → write `clean`.
-   Done when: `git status --short` prints nothing outside `.potion/`.
+   **Unpushed-state check:** run `git rev-list --count @{upstream}..HEAD`;
+   surface the result to the user BEFORE the stall is recorded — "branch is N
+   commits ahead of origin — push now or this stall is invisible beyond this
+   machine" (command error = no upstream, surfaced as such); record the answer
+   in continue-here.md's Unpushed field. Never auto-push.
+   Done when: `git status --short` prints nothing outside `.potion/` and the
+   Unpushed field is filled.
 
 4. Update STATE.md: status `paused`, Session Continuity block pointing at
    continue-here.md. Done when: STATE.md's status line reads `paused`.

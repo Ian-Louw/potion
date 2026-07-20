@@ -18,6 +18,9 @@ Dirty tree: {clean | WIP commit {hash} — one line on what's half-done}
 <!-- If pause found uncommitted source edits, they were committed as
      `wip(potion): paused mid {phase}-{plan} task {N}` and recorded here. -->
 
+Unpushed: {in sync | N commits ahead of origin | no upstream}
+<!-- Recorded at pause time; an unpushed stall is invisible to other machines. -->
+
 ## Completed so far
 
 | Task | Commit | Note |

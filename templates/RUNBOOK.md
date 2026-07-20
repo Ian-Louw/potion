@@ -5,6 +5,7 @@ type: runbook
 wave: 1                      # max(wave of dependencies) + 1; wave 1 = no deps
 depends_on: []               # plan/runbook numbers this runbook needs completed first
 gate: "{the hitl gate this clears, from DISCUSSION.md gates}"
+expires: "{YYYY-MM-DD — copied from the gate's DISCUSSION entry}"
 ---
 
 <!-- Executed by a HUMAN. Potion's role: present steps, run done_when checks,

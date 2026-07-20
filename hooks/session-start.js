@@ -8,6 +8,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { execSync } = require("child_process");
 const { loadDeclaredSecrets, findLeakedFiles } = require(path.join(
   __dirname,
   "declared-secrets.js"
@@ -192,6 +193,149 @@ try {
   }
 } catch {
   /* warn-posture: never block a session over the retro-scan */
+}
+
+// Staleness beacon (phase 18): two-signal staleness (abandonment vs
+// potion-bypassed), stale-Position (F-24), and expired-gate scan.
+// Warn-posture: any throw is swallowed, the section is skipped — a session
+// is never blocked by this leg.
+try {
+  const STALE_DAYS = 3;
+  const DAY = 86400;
+  const gitTs = (pathspec) => {
+    try {
+      const out = execSync(
+        "git log -1 --format=%ct" + (pathspec ? " -- " + pathspec : ""),
+        { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }
+      ).trim();
+      const n = parseInt(out, 10);
+      return Number.isFinite(n) ? n : null;
+    } catch {
+      return null;
+    }
+  };
+  const now = Date.now() / 1000;
+  const daysOld = (ts) => Math.floor((now - ts) / DAY);
+  const dateOf = (ts) => new Date(ts * 1000).toISOString().slice(0, 10);
+  const lastRepo = gitTs("");
+  const lastPotion = gitTs('".potion/"');
+  const statusM = state ? state.match(/^- Status:\s*([a-z]+)/m) : null;
+  const status = statusM ? statusM[1] : null;
+  const motion =
+    status === "executing" || status === "verifying" || status === "planning";
+  const offer =
+    "Offer pause-or-resume now: /potion:resume to pick the work back up, or /potion:pause to record the stall honestly.";
+
+  let beacon = null; // lines of whichever staleness signal fired
+  if (motion && lastRepo !== null && now - lastRepo >= STALE_DAYS * DAY) {
+    // Signal 1 (abandonment): motion claimed, no commits at all.
+    beacon = [
+      "\n## POTION STALENESS BEACON — motion claimed, none observed",
+      `STATE says '${status}' but the last commit is ${daysOld(lastRepo)} days old (${dateOf(lastRepo)}).`,
+    ];
+  } else if (
+    motion &&
+    lastRepo !== null &&
+    now - lastRepo < STALE_DAYS * DAY &&
+    lastPotion !== null &&
+    now - lastPotion >= STALE_DAYS * DAY
+  ) {
+    // Signal 2 (bypass): repo moves, .potion/ doesn't.
+    beacon = [
+      "\n## POTION STALENESS BEACON — potion is being bypassed",
+      `Repo commits continue but .potion/ was last touched ${daysOld(lastPotion)} days ago (${dateOf(lastPotion)}).`,
+    ];
+  }
+
+  // F-24: STATE's Last activity date lagging the actual last commit.
+  let lagLine = null;
+  if (state && lastRepo !== null) {
+    const la = state.match(/^- Last activity:\s*(\d{4}-\d{2}-\d{2})/m);
+    if (la) {
+      const stateMs = Date.parse(la[1]);
+      if (
+        Number.isFinite(stateMs) &&
+        lastRepo * 1000 - stateMs >= STALE_DAYS * DAY * 1000
+      ) {
+        lagLine = `STATE's Last activity (${la[1]}) lags the last commit (${dateOf(lastRepo)}) — Position is stale; update STATE.md.`;
+      }
+    }
+  }
+
+  if (beacon) {
+    if (lagLine) beacon.push(lagLine);
+    beacon.push(offer);
+    parts.push(...beacon);
+  } else if (lagLine) {
+    parts.push("\n## POTION STALENESS BEACON — Position is stale", lagLine);
+  }
+
+  // Expired-gate scan (current phase only): DISCUSSION.md gate entries +
+  // RUNBOOK-*.md frontmatter. A RUNBOOK-NN with SUMMARY-NN.md is cleared —
+  // skipped, and same-named DISCUSSION gates are suppressed too.
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    // \n excluded: the same regex runs over multi-line RUNBOOK frontmatter,
+    // where an unbounded class would capture past the gate line's end.
+    const gateRe = /gate:\s*"?([^",}\n]+)"?/;
+    const expRe = /expires:\s*"?(\d{4}-\d{2}-\d{2})/;
+    const phaseLine = state ? state.match(/^- Phase:.*$/m) : null;
+    const slug = phaseLine
+      ? phaseLine[0].match(/\b(\d+(?:\.\d+)?-[a-z0-9-]+)/)
+      : null;
+    if (slug) {
+      const phaseDir = path.join(potionDir, "phases", slug[1]);
+      const files = fs.readdirSync(phaseDir);
+      const cleared = new Set(); // gate names resolved by a runbook SUMMARY
+      const expired = []; // { name, date, src }
+      for (const f of files) {
+        const m = f.match(/^RUNBOOK-(\d+)\.md$/);
+        if (!m) continue;
+        const text = readIfExists(path.join(phaseDir, f));
+        if (!text) continue;
+        // Frontmatter = text between the first `---` line and the next.
+        const lines = text.split("\n");
+        const i = lines.findIndex((l) => l.trim() === "---");
+        const j = i >= 0 ? lines.findIndex((l, k) => k > i && l.trim() === "---") : -1;
+        const fm = j > i && i >= 0 ? lines.slice(i + 1, j).join("\n") : "";
+        const g = fm.match(gateRe);
+        if (!g) continue;
+        const name = g[1].trim();
+        if (files.includes(`SUMMARY-${m[1]}.md`)) {
+          cleared.add(name); // gate resolved; nagging is a defect
+          continue;
+        }
+        const e = fm.match(expRe);
+        if (e && e[1] < today) expired.push({ name, date: e[1], src: f });
+      }
+      const disc = readIfExists(path.join(phaseDir, "DISCUSSION.md"));
+      if (disc) {
+        for (const line of disc.split("\n")) {
+          const g = line.match(gateRe);
+          if (!g) continue;
+          const name = g[1].trim();
+          if (cleared.has(name)) continue;
+          const e = line.match(expRe);
+          // No parseable expires date → old grammar, skip silently.
+          if (e && e[1] < today)
+            expired.push({ name, date: e[1], src: "DISCUSSION.md" });
+        }
+      }
+      if (expired.length) {
+        parts.push("\n## POTION EXPIRED GATE — decide, renew, or abandon");
+        for (const g of expired) {
+          parts.push(`- ${g.name}: expired ${g.date} (${g.src})`);
+        }
+        parts.push(
+          "Handle at /potion:resume or /potion:discuss — renewal is one conscious line (bump expires)."
+        );
+      }
+    }
+  } catch {
+    /* warn-posture: never block a session over the gate scan */
+  }
+} catch {
+  /* warn-posture: never block a session over the staleness beacon */
 }
 
 if (source === "compact" && state) {

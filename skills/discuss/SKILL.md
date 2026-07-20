@@ -11,7 +11,8 @@ downstream agent ever re-litigates them or sneaks in deferred scope.
 **Emission contract — DISCUSSION.md:** three body buckets (`## Decisions` —
 LOCKED; `## Claude's Discretion`; `## Deferred`); every idea raised in
 conversation lands in exactly one bucket — nothing evaporates; external
-prerequisites become `gates:` frontmatter entries typed hitl or afk (omit the
+prerequisites become `gates:` frontmatter entries typed hitl or afk, each
+carrying added/expires dates (omit the
 frontmatter when the phase has no gates); exit updates STATE.md — gist-and-link
 recent decisions, consumed fog/queue items removed, conscious rejections moved
 to PROJECT.md's ## Out of scope. Before finishing, re-read the emitted
@@ -32,6 +33,10 @@ at most once.
    items are candidate forks; surface the FULL Decision queue and force a call
    or a conscious renewal on every expired entry — and PROJECT.md's
    ## Out of scope ledger, which is settled: never re-litigate an entry there.
+   Also scan every phases/*/RUNBOOK-*.md lacking its SUMMARY plus the target
+   phase's DISCUSSION gates for entries whose expires date has passed; force a
+   decide-renew-or-abandon call on each expired gate before the forks are
+   discussed.
    List the 3-7 genuine forks in the road: UX shape, data
    model choices, integration points, tradeoffs with real consequences. Forks
    with a conventional answer you can defend in one sentence: decide them
@@ -40,7 +45,8 @@ at most once.
    bucket is the defect.
    Enumerate external prerequisites the phase's work depends on — credentials,
    dashboard/console toggles, store accounts, physical devices. Tag each `hitl`
-   (a human must act) or `afk` (agents can do it unattended); /potion:plan
+   (a human must act) or `afk` (agents can do it unattended), and record
+   added + expires per the step-4 grammar; /potion:plan
    turns hitl-gated work into RUNBOOKs, never executable PLANs. Done when: the
    3-7 fork list is written out, every self-decided fork has its chosen answer
    noted, and every prerequisite carries a hitl/afk tag.
@@ -55,9 +61,14 @@ at most once.
    ```yaml
    ---
    gates:
-     - {gate: "<short name>", type: hitl | afk, unblocks: "<what work waits on this>"}
+     - {gate: "<short name>", type: hitl | afk, unblocks: "<what work waits on this>", added: YYYY-MM-DD, expires: YYYY-MM-DD}
    ---
    ```
+
+   Expiry is mandatory — no indefinite gates. A gate whose ETA is genuinely
+   unknowable gets a review date capped at 14 days out. Expired gates are
+   decided, renewed (one conscious line bumping expires), or abandoned —
+   never silently carried.
 
    ```markdown
    ## Decisions            <!-- LOCKED. Re-litigating one downstream is a defect. -->
