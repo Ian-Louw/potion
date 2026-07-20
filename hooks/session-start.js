@@ -8,6 +8,10 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { loadDeclaredSecrets, findLeakedFiles } = require(path.join(
+  __dirname,
+  "declared-secrets.js"
+));
 
 const root = process.cwd();
 const potionDir = path.join(root, ".potion");
@@ -159,6 +163,35 @@ if (fs.existsSync(userJournal)) {
       }
     }
   }
+}
+
+// Retro-scan: declared values already sitting in committed HEAD (standing
+// leaks). Warn loudly with file + KEY names — never values. Warn-posture:
+// any failure is swallowed, a session is never blocked by this leg.
+try {
+  const secrets = loadDeclaredSecrets(root);
+  if (secrets.length) {
+    const leaked = findLeakedFiles(root, secrets);
+    if (leaked.length) {
+      parts.push(
+        "\n## POTION SECRET RETRO-SCAN — standing leak in committed HEAD"
+      );
+      for (const l of leaked) {
+        parts.push(`- ${l.file}: ${l.keys.join(", ")}`);
+      }
+      parts.push(
+        "Record this as a blocker in .potion/STATE.md ## Blockers now " +
+          "(file list + KEY names, never values)."
+      );
+      parts.push(
+        "Until these files are cleaned (value replaced by a KEY-name " +
+          "reference), commits touching them are blocked by the scrubber. " +
+          "Clean them, then this warning disappears."
+      );
+    }
+  }
+} catch {
+  /* warn-posture: never block a session over the retro-scan */
 }
 
 if (source === "compact" && state) {

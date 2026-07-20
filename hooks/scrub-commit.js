@@ -10,6 +10,10 @@
 const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const { loadDeclaredSecrets, findLeakedFiles } = require(path.join(
+  __dirname,
+  "declared-secrets.js"
+));
 
 const PATTERNS = [
   { name: "openai-style key (sk-…)", re: /sk-[A-Za-z0-9_-]{16,}/ },
@@ -99,7 +103,56 @@ function main() {
     for (const chunk of diffChunks(git(args, cwd))) scanChunk(chunk);
   }
 
+  // Declared values from verify-env.local are literal scrub patterns,
+  // scanned over the WHOLE-REPO diffs (no .potion pathspec) — human-shaped
+  // passwords can leak into any file. Exact literal matching only; the
+  // block message names the KEY, never the value. Absent/unreadable file
+  // → empty list → zero behavior change.
+  const declared = loadDeclaredSecrets(cwd);
+  if (declared.length > 0) {
+    for (const args of ["diff --cached", "diff HEAD"]) {
+      for (const chunk of diffChunks(git(args, cwd))) {
+        for (const s of declared) {
+          if (chunk.text.includes(s.value)) {
+            block(
+              `declared secret ${s.key} (value from verify-env.local)`,
+              chunk.file
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // Retro-scan leg: standing leaks in committed HEAD quarantine their files.
+  // A commit touching a leaked file is blocked until the file is cleaned;
+  // commits touching only unaffected files proceed. Values never printed.
+  if (declared.length > 0) {
+    const leaked = findLeakedFiles(cwd, declared);
+    if (leaked.length > 0) {
+      const touched = new Set();
+      for (const args of ["diff --cached --name-only", "diff HEAD --name-only"]) {
+        for (const line of git(args, cwd).split("\n")) {
+          const t = line.trim();
+          if (t) touched.add(t);
+        }
+      }
+      for (const l of leaked) {
+        if (touched.has(l.file)) {
+          block(
+            `standing leak — ${l.file} contains declared secret ` +
+              `${l.keys.join(", ")} (retro-scan; clean the file before ` +
+              "committing to it)",
+            l.file
+          );
+        }
+      }
+    }
+  }
+
   // (c) untracked .potion files — read each one directly.
+  // Untracked scanning stays .potion-scoped (scanning every untracked file
+  // repo-wide is unbounded); declared values are checked here too.
   const untracked = git(
     'ls-files --others --exclude-standard -- ".potion/"',
     cwd
@@ -118,6 +171,14 @@ function main() {
     }
     for (const p of PATTERNS) {
       if (p.re.test(content)) block(p.name, rel);
+    }
+    for (const s of declared) {
+      if (content.includes(s.value)) {
+        block(
+          `declared secret ${s.key} (value from verify-env.local)`,
+          rel
+        );
+      }
     }
   }
 

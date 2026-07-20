@@ -1,5 +1,56 @@
 # Changelog
 
+## 1.11.0 — 2026-07-20
+
+The secret-ratchet release: the scrubber can now catch human-shaped
+passwords, not just machine-shaped keys. Cycle 3 opens on the highest-weight
+field finding (F-20 — a fixture password committed 10× in a dogfood repo):
+any value declared in a project's gitignored `verify-env.local` becomes a
+literal scrub pattern, standing leaks in committed HEAD are surfaced and
+quarantined, and the originating leak itself is cleaned. Verified in one
+cycle, 21/21 truth and scenario rows.
+
+### Declared-secret ratchet (behavior change)
+- New `hooks/declared-secrets.js`: parses `verify-env.local` KEY=value lines
+  (8-char minimum floor, fail-open on any read error) and finds leaked files
+  via `git grep -F -f -` with values passed over stdin — never argv
+  (1da6924, 7efc672).
+- The commit scrubber scans the WHOLE-REPO staged and unstaged diffs for
+  declared values — not just `.potion/` — and blocks with the KEY name; the
+  secret value never appears in any message. A repo with no
+  `verify-env.local` sees byte-identical pre-existing behavior
+  (1da6924; spec `enforcement-hooks/scrubber-blocks-declared-values`).
+
+### Retro-scan for standing leaks (behavior change)
+- Session start in a repo whose committed HEAD contains a declared value
+  emits a loud `POTION SECRET RETRO-SCAN` warning naming the KEY and every
+  affected file, and instructs the session to record a STATE blocker; commits
+  touching a contaminated file are blocked, while unrelated commits pass —
+  a standing leak never bricks unrelated work (616fa28;
+  spec `enforcement-hooks/retro-scan-standing-leak`).
+
+### Template
+- `templates/verify-env.md` now rules that fixture credentials live in
+  `.local` and are referenced BY NAME, and that declared values double as
+  scrub patterns (6356a9f; spec `verify-env/fixture-credentials-by-name`).
+
+### Field cleanup and live proof
+- The originating partner-app leak is dead in HEAD: 10 files scrubbed to
+  KEY-name references + gitignore guard (partner-app commit 4986874); rotation
+  consciously deferred to pre-launch by human amendment — demo-only accounts,
+  value never pushed, Decision-queue entry expires 2026-10-17 (11f5db2,
+  f866f03).
+- Live mischief proofs committed: a planted declared password blocked in a
+  real headless session (SENTINEL-BLOCKED) and the retro-scan observed firing
+  (SENTINEL-RETRO); the same password literal was scrubbed from phase-16
+  evidence (de41adf, e9650cb).
+
+### Process
+- Phase 17 record: discussion + cycle-3 conversion (50beae8), plans + runbook
+  (b330391), wave tracking (4a99ec6), executor summaries (be4db32, 8c17f19,
+  bd34ce5), completion (60a00f3), verification cycle-1 pass 21/21 with fresh
+  runtime matrix (9649044), and the mechanical spec merge (c504678).
+
 ## 1.10.0 — 2026-07-18
 
 The live-proof release: every enforcement hook has now been observed firing

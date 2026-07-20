@@ -11,8 +11,11 @@
 - Seed/reset command: <!-- e.g. `npm run db:seed` — leaves the account in a known state -->
 - Staging/base URL: <!-- where the running app lives -->
 
-Secret values live in `.potion/verify-env.local` (gitignored) as KEY=value —
-never in this file.
+Secret values — including fixture-account passwords — live in
+`.potion/verify-env.local` (gitignored) as KEY=value, never in this file.
+Reference them BY NAME (e.g. `password: see PARTNER_APP_PROD_FIXTURE_PASSWORD
+in verify-env.local`). Every declared value doubles as a literal scrub
+pattern: the commit hook blocks any commit containing it.
 
 <!-- ============ Shape B: declaration ============ -->
 <!-- The entire file is one line. Example: `none-needed: CLI tool, no auth, no external services` -->
