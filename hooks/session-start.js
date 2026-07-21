@@ -13,6 +13,7 @@ const { loadDeclaredSecrets, findLeakedFiles } = require(path.join(
   __dirname,
   "declared-secrets.js"
 ));
+const { loadEscalations } = require(path.join(__dirname, "escalations.js"));
 
 const root = process.cwd();
 const potionDir = path.join(root, ".potion");
@@ -336,6 +337,32 @@ try {
   }
 } catch {
   /* warn-posture: never block a session over the staleness beacon */
+}
+
+// Expired/inert-grant scan (phase 19): standing escalations in
+// .potion/escalations.md whose expires date has passed, or that lack the
+// mandatory expires date entirely (inert — the approve hook never matches
+// them). Warn-posture: any throw is swallowed, the section is skipped — a
+// session is never blocked by this leg.
+try {
+  const entries = loadEscalations(root);
+  const today = new Date().toISOString().slice(0, 10);
+  const expired = entries.filter((e) => e.expires !== null && e.expires < today);
+  const inert = entries.filter((e) => e.expires === null);
+  if (expired.length || inert.length) {
+    parts.push("\n## POTION EXPIRED ESCALATION — decide, renew, or abandon");
+    for (const e of expired) {
+      parts.push(`- ${e.name}: expired ${e.expires} (.potion/escalations.md)`);
+    }
+    for (const e of inert) {
+      parts.push(`- ${e.name}: missing mandatory expires — grant is inert until dated`);
+    }
+    parts.push(
+      "Renewal is one conscious line — bump expires in .potion/escalations.md."
+    );
+  }
+} catch {
+  /* warn-posture: never block a session over the escalation scan */
 }
 
 if (source === "compact" && state) {

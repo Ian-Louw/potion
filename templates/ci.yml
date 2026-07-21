@@ -1,0 +1,47 @@
+# potion-verify — adoptable CI for a potion-managed repo.
+# Copy to .github/workflows/potion-verify.yml. Runs the mechanical verify
+# layer (.potion/scripts/ci-verify.sh, installed by install-repo-hooks.sh)
+# on every push and pull request. No key required, none shipped.
+
+name: potion-verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  mechanical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ratchet checks
+        run: sh .potion/scripts/ci-verify.sh
+
+# ---------------------------------------------------------------------------
+# Agentic blind-verify — OPT-IN, bring your own key. Not enabled by default.
+#
+# A maintainer who wants the agentic verification layer in CI adds their own
+# ANTHROPIC_API_KEY as a repository secret and uncomments a job like the one
+# below. Potion never ships or hosts a key; this template contains no secret
+# reference in active YAML. See potion's own .github/workflows/
+# agentic-verify.yml for the reference implementation (label/dispatch
+# triggered, blind static audit of a phase's must_haves).
+#
+#  blind-verifier:
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 30
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: agentic blind verify
+#        env:
+#          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+#        run: |
+#          # invoke your agent runner here, pointed at the phase's
+#          # VERIFICATION ladder — see potion's agentic-verify.yml.
+#          echo "bring-your-own-key agentic verify goes here"
+# ---------------------------------------------------------------------------

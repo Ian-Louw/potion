@@ -46,6 +46,15 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    executable (0/4, 0/1) because human gates were discovered at run time instead
    of plan time.
 
+   **Escalation preflight:** a plan whose tasks invoke a gated mutation (deploy,
+   publish, prod write) declares the grant names in `escalations:` frontmatter.
+   Before emitting, read `.potion/escalations.md`: every referenced name must
+   exist with `expires` today-or-later. Missing or expired → STOP and ask the
+   human, presenting a ready-to-paste registry line (grammar in
+   templates/escalations.md, 90-day default expiry) — the human edits and commits
+   the registry, then planning resumes. Undeclared commands still wall at run
+   time; declaring is what makes the lane sanctioned.
+
 2. If the phase needs research (unfamiliar library, external API), do a focused
    pass now and write findings into the plans' `<context>` — not a separate
    research pipeline.

@@ -12,7 +12,9 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Creates the project's durable memo
 `.potion/STATE.md` (position: phase 1); `.potion/verify-env.md` (recipe or
 `none-needed: <why>` — never absent); `.potion/phases/01-{slug}/` directory;
 the `merge=union` line in `.gitattributes`; the `verify-env.local` line in
-`.gitignore`; the init commit. Before finishing, re-read the emitted files
+`.gitignore`; the installed repo-side pre-commit hook (`.git/hooks/pre-commit`
+shim + `.potion/scripts/pre-commit.js`, or a surfaced refusal); the init
+commit. Before finishing, re-read the emitted files
 against this block; fix in place, or regenerate —
 at most once.
 
@@ -74,8 +76,18 @@ at most once.
    `.gitattributes` (append-only files merge sanely across branches). Append
    `.potion/verify-env.local` to `.gitignore` (create `.gitignore` if absent)
    — one line, with the comment "secret values for the runtime session recipe".
+   Install the repo-side hooks: run
+   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/install-repo-hooks.sh"` from the repo
+   root (installs the pre-commit secret mirror + ci-verify copy into
+   `.potion/scripts/`). If it refuses over an existing pre-commit hook,
+   surface the refusal to the human and ask before re-running with --force —
+   never force unprompted. Then offer CI adoption as ONE question: copy
+   `${CLAUDE_PLUGIN_ROOT}/templates/ci.yml` to
+   `.github/workflows/potion-verify.yml`? (Mechanical verify on push/PR; no
+   key needed.) Skip silently only if the user already declined CI.
    Done when: `grep merge=union .gitattributes` and
-   `grep verify-env.local .gitignore` each print one line.
+   `grep verify-env.local .gitignore` each print one line, and the installer
+   reported the pre-commit shim installed (or its refusal was surfaced).
 
 6. **Commit.** Done when: `git log -1 --oneline` shows
    `chore(potion): initialize project memory`.

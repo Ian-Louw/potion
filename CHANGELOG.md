@@ -1,5 +1,69 @@
 # Changelog
 
+## 1.13.0 — 2026-07-21
+
+The escalation-lane release: recurring gated mutations stop re-begging for
+permission, and a target repo keeps its secret protection even with no
+plugin loaded. A human grants a named wrapper + exact command once in a
+standing registry; the PermissionRequest hook approves only a byte-exact,
+unexpired match — everything else, including every internal error, falls
+through to the normal wall. The hook is structurally incapable of denying.
+Verified in one cycle: 13/14 truths runtime-verified fresh, the one
+real-event observation user-accepted as COULD_NOT_CHECK (headless sessions
+cannot isolate a PermissionRequest approval on this machine).
+
+### Escalation lane (new capability)
+- Standing repo-level registry `.potion/escalations.md` with single-line
+  grant grammar (name, wrapper, exact command, grantor, added, expires) and
+  a fail-open line-oriented loader; template with copyable worked example
+  and renewal ceremony (90d69f4; spec
+  `escalation-lane/registry-standing-grants`).
+- PermissionRequest hook auto-approves ONLY a trimmed byte-exact command
+  match whose grant is unexpired and whose wrapper file exists; near-miss,
+  undeclared, expired, inert (no expires), missing wrapper, missing
+  registry, garbage stdin, and non-Bash tools all produce no decision and
+  exit 0 — the hook never denies and never exits nonzero (f9148c5; specs
+  `escalation-lane/exact-match-approve-only`,
+  `escalation-mandatory-expiry`, `escalation-never-denies`).
+- Proof: 9-case direct-payload fixture matrix plus an honest record of the
+  headless layer-B confounders (8ce71e5); plan record 13a41f2, merged
+  f83aa7e.
+- Expired or expiry-less grants surface at session start as
+  decide-renew-or-abandon — warn-posture, fail-open, never blocks
+  (a6d9f50; spec `escalation-lane/expired-escalation-surfacing`); proof
+  matrix 41a1474; summary d661743.
+- Plans declare grants by name in new `escalations:` frontmatter; the
+  planner refuses to emit a plan referencing an absent or expired grant and
+  presents a ready-to-paste registry line instead — the human alone edits
+  the registry (d291797; spec
+  `escalation-lane/plan-references-grants-by-name`).
+
+### Repo-side enforcement (plugin-free)
+- Checked-in pre-commit mirror of the secret scrubber: staged secret-shaped
+  content under `.potion/`, declared verify-env.local values repo-wide, and
+  verify-env.local itself all block at `git commit` with pattern/KEY + file
+  named, values never printed; override is `git commit --no-verify`;
+  fail-open on every error. Self-locating installer refuses to clobber an
+  existing pre-commit hook without `--force` (f8a7a95; specs
+  `enforcement-hooks/repo-side-pre-commit-mirror`,
+  `installer-never-clobbers`).
+- Adoptable `templates/ci.yml`: mechanical ci-verify job active by default,
+  agentic blind-verify documented as bring-your-own-key opt-in comments
+  only — no key ships anywhere; /potion:init housekeeping now installs the
+  repo-side hooks for new repos and offers ci.yml as one question
+  (8bc7f3d; specs `ci-verification/adoptable-ci-template`,
+  `enforcement-hooks/init-installs-repo-hooks`). Proof: 8-case plugin-free
+  fixture matrix, redacted (b8a8619); summary 09c06e8; merged 9a33863.
+
+### Verification & bookkeeping
+- Cycle-1 verify: blind static ladder (14 artifacts VERIFIED, 7 key links
+  traced), fresh orchestrator-run fixture matrices at HEAD, dogfood
+  enactments of both prompt-enforced truths, SUMMARY→git cross-check clean;
+  2 learnings + 4 phase-19 witnesses harvested (c2566f4); spec merge
+  513b7ff.
+- Phase records: discussion b366e2f, plans 6b8070d, completion + session
+  continuity 056be8a / 52d8b4c.
+
 ## 1.12.0 — 2026-07-20
 
 The liveness release: repos that look busy but aren't get caught. A
