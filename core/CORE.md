@@ -196,6 +196,13 @@ consciously renewed, never silently carried). Consciously rejected items live
 in PROJECT.md's `## Out of scope` ledger with why — never graduates back into
 scope, checked at every discuss, written only when the human is present;
 skills never write it unilaterally. Nothing evaporates.
+A Fog/Parked line recording an observed failure starts `- [defect] ` (dash,
+space, literal tag, space); untagged prose stays ordinary fog. verify and
+discuss promote every surviving tagged line before proceeding; /potion:plan
+refuses to plan past one. Routing: mechanically fixable in-scope defect → gap
+entry in the current phase's VERIFICATION.md `gaps:`; human call → Decision-queue
+item (added + expires); ambiguous → ask, one line. The promoted line is removed
+from Fog/Parked in the same edit — never both.
 
 Any skill whose exit updates STATE.md's Position also rewrites Session
 continuity to match — or sets it to 'in flow — derive from Position'.

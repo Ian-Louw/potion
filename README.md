@@ -4,7 +4,7 @@
 
 <em>The magic potion for Claude Code — plans are prompts, disk is memory,<br/>evidence or it didn't happen.</em>
 
-[![License](https://img.shields.io/github/license/Ian-Louw/potion)](LICENSE) [![Release](https://img.shields.io/github/v/release/Ian-Louw/potion)](https://github.com/Ian-Louw/potion/releases) ![Skills](https://img.shields.io/badge/skills-11-blueviolet) ![Agents](https://img.shields.io/badge/agents-2-blueviolet) ![Hooks](https://img.shields.io/badge/hooks-1-blueviolet) ![Brewed with itself](https://img.shields.io/badge/brewed_with-itself-8A2BE2)
+[![License](https://img.shields.io/github/license/Ian-Louw/potion)](LICENSE) [![Release](https://img.shields.io/github/v/release/Ian-Louw/potion)](https://github.com/Ian-Louw/potion/releases) ![Skills](https://img.shields.io/badge/skills-13-blueviolet) ![Agents](https://img.shields.io/badge/agents-2-blueviolet) ![Hooks](https://img.shields.io/badge/hooks-1-blueviolet) ![Brewed with itself](https://img.shields.io/badge/brewed_with-itself-8A2BE2)
 
 </div>
 
@@ -16,10 +16,10 @@ graph LR
 ```
 
 Plus utilities: `/potion:pause` · `/potion:resume` · `/potion:learn` ·
-`/potion:investigate` · `/potion:pair` — and **`/potion:brew`** runs the whole crank
+`/potion:investigate` · `/potion:pair` · `/potion:update` — and **`/potion:brew`** runs the whole crank
 end-to-end, stopping only at human gates.
 
-**Eleven skills. Two agents. One hook.** No ceremony. This repo's own
+**Thirteen skills. Two agents. One hook.** No ceremony. This repo's own
 `.potion/` is the live proof — potion brews itself, and it red-teamed its
 own verifier with five seeded defects. It caught all five.
 

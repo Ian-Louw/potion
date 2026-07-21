@@ -365,6 +365,47 @@ try {
   /* warn-posture: never block a session over the escalation scan */
 }
 
+// Grammar-drift scan (phase 20): repos initialized under older .potion
+// grammar get NOTICED, not silently left behind. Cheap fs/string checks
+// only — no git calls, no template reads, no home-dir reads. Notice-only:
+// this leg never creates, edits, or commits any file; /potion:update is the
+// only mutating lane. Warn-posture: any throw is swallowed — a session is
+// never blocked by this leg.
+try {
+  const drift = [];
+  if (!fs.existsSync(path.join(potionDir, "verify-env.md"))) {
+    drift.push("verify-env.md declaration missing (planners refuse runtime truths)");
+  }
+  if (
+    state &&
+    (!/^## Fog$/m.test(state) || !/^## Decision queue$/m.test(state))
+  ) {
+    drift.push("STATE.md predates the three-bucket grammar (Fog / Decision queue)");
+  }
+  if (!fs.existsSync(path.join(potionDir, "specs"))) {
+    drift.push(".potion/specs/ missing (living specs)");
+  }
+  if (!fs.existsSync(path.join(potionDir, "scripts", "pre-commit.js"))) {
+    drift.push("repo-side pre-commit mirror not installed");
+  }
+  if (state && /^## Parked$/m.test(state)) {
+    drift.push("legacy ## Parked section awaits interactive triage");
+  }
+  if (drift.length) {
+    parts.push(
+      "\n## POTION GRAMMAR DRIFT — this repo predates current potion grammar"
+    );
+    for (const d of drift) {
+      parts.push(`- ${d}`);
+    }
+    parts.push(
+      "Run /potion:update to migrate — nothing has been changed automatically."
+    );
+  }
+} catch {
+  /* warn-posture: never block a session over the grammar-drift scan */
+}
+
 if (source === "compact" && state) {
   // Post-compaction re-grounding: mechanical digest from disk, because the
   // compaction summary may have dropped or distorted mid-phase state.

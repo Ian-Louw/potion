@@ -37,6 +37,10 @@ at most once.
    phase's DISCUSSION gates for entries whose expires date has passed; force a
    decide-renew-or-abandon call on each expired gate before the forks are
    discussed.
+   [defect]-tagged fog or Parked lines are not discussion candidates — promote
+   each (gap entry in the current phase's VERIFICATION.md or Decision-queue
+   item, per CORE's routing rule) and remove it from the bucket
+   BEFORE listing forks.
    List the 3-7 genuine forks in the road: UX shape, data
    model choices, integration points, tradeoffs with real consequences. Forks
    with a conventional answer you can defend in one sentence: decide them

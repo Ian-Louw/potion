@@ -8,8 +8,7 @@ description: Use after executing a phase, or whenever work is about to be declar
 Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. You are the ORCHESTRATOR of
 verification, not the auditor — the static audit is a spawned verifier told
 nothing of executor claims. Prime directive: **DO NOT TRUST SUMMARIES** — a
-SUMMARY documents what an agent SAID; verification checks what exists. Task
-completion ≠ goal achievement.
+SUMMARY documents what an agent SAID; verification checks what exists. Task completion ≠ goal achievement.
 
 **Verdict contract (must hold in the emitted VERIFICATION.md):**
 - Closed truth vocabulary: `VERIFIED | STATIC_ONLY | FAILED |
@@ -18,8 +17,7 @@ completion ≠ goal achievement.
 - Verdict `pass` ONLY when every truth is VERIFIED, HUMAN_NEEDED
   acknowledged this cycle, or COULD_NOT_CHECK converted by the user this
   cycle — an unconverted COULD_NOT_CHECK can never pass.
-- `verified_at` from fresh `date -Iseconds` — a hand-typed timestamp has
-  tripped the ship gate once already.
+- `verified_at` from fresh `date -Iseconds` — a hand-typed timestamp has tripped the ship gate once already.
 - Runtime proof is an evidence path, not a claim.
 Before finishing, re-read the emitted VERIFICATION.md against this block;
 fix in place, or regenerate it — at most once.
@@ -41,15 +39,19 @@ check that MISMATCHES is a regression; a check whose command ERRORS is
 report it as a regression. A check keyed `witness-*` that MISMATCHES gets
 one repo-wide grep for its marker: found elsewhere = DRIFT (route to
 /potion:learn to re-pin), absent = REGRESSION — lead with it.
-Check runner contract: per CORE.md — MATCH on
-stdout/exit, CHECK_BROKEN on ERROR; never add `|| true`.
+Check runner contract: per CORE.md — MATCH on stdout/exit, CHECK_BROKEN on ERROR; never add `|| true`.
+Promotion sweep: `grep -n '^- \[defect\]'` over STATE.md's ## Fog and any
+legacy ## Parked; every hit is promoted NOW (gap entry in this cycle's
+VERIFICATION.md or Decision-queue item, per CORE's routing rule) and removed
+from the bucket — an unpromoted [defect] line at verdict time is itself a
+defect.
 
 **Step 2 — Blind static ladder (spawned verifier).** Spawn an agent: "First
 read ${CLAUDE_PLUGIN_ROOT}/core/CORE.md and
 ${CLAUDE_PLUGIN_ROOT}/agents/potion-verifier.md. Audit phase {NN-slug} of
-{repo path}." + the phase's must_haves inlined + relevant locked decisions
-+ the phase's `<spec_deltas>` requirement IDs and scenario text
-(delta-scoped: touched requirements only).
+{repo path}." + the phase's must_haves inlined + relevant locked decisions +
+its `<spec_deltas>` requirement IDs and scenario text (delta-scoped: touched
+requirements only).
 Do NOT tell it what the executors claimed or what step 1 found. Done when its
 ladder results sit in VERIFICATION.md with statuses from `STATIC_ONLY |
 FAILED | HUMAN_NEEDED` only.
@@ -61,10 +63,10 @@ truth gets a live pass: start the app/tool yourself (if Claude can run it,
 Claude runs it) and exercise the truth. Where a browser tool exists, diff
 pattern: snapshot → act → snapshot-diff — a state diff is proof, a claim is
 not. Proof artifacts land in `phases/NN-slug/evidence/` named
-`{plan-or-cycle}-{slug}.{ext}` (e.g. `03-share-flow.png`,
-`cycle2-t7-logcat.txt`); VERIFICATION.md's Runtime evidence column references
-them by path — a path is checkable, a claim is not. CLI/library/pipeline
-equivalent: one real invocation / import-and-call in a scratch script.
+`{plan-or-cycle}-{slug}.{ext}` (e.g. `03-share-flow.png`); VERIFICATION.md's
+Runtime evidence column references them by path — a path is checkable, a
+claim is not. CLI/library/pipeline equivalent: one real invocation /
+import-and-call in a scratch script.
 Cross-check each SUMMARY's task→commit table against `git log` — "do not
 trust summaries" includes their hashes. Use the verify-env recipe for live
 sessions. A truth blocked ENVIRONMENTALLY (closed reasons per CORE.md) is
@@ -108,8 +110,7 @@ Uncited artifacts (Truths `-`) and DUPLICATE lines are findings.
 
 Gaps found → `/potion:plan` (gaps mode) writes fix plans continuing the phase's
 plan numbering → `/potion:execute` runs them → re-verify: failed items get the
-full protocol, previously-passed items get a quick regression check. Report
-`gaps_closed / gaps_remaining / regressions`.
+full protocol, previously-passed items a quick regression check. Report `gaps_closed / gaps_remaining / regressions`.
 
 **Loop budget: 3 cycles**, tracked by the `cycle` field (the counter must live
 on disk — sessions `/clear` between steps). If gaps survive cycle 3, stop:
@@ -118,16 +119,14 @@ surviving gaps and what was tried. Unbounded retry is automating drift.
 
 **Hot-loop exception.** When a gap's repro needs costly environment setup
 (emulator boot, device, slow service), ONE agent may run the full gap cycle
-(investigate → gap plan → fix → re-verify) in a single environment session
-instead of four spawns. The books stay honest: debug file, gap PLAN, SUMMARY,
-evidence, and learnings land on disk exactly as the separated protocol would
-produce them. Use only when setup cost genuinely dominates.
+(investigate → gap plan → fix → re-verify) in one environment session instead
+of four spawns. The books stay honest: debug file, gap PLAN, SUMMARY,
+evidence, and learnings land on disk exactly as the separated protocol would produce them. Use only when setup cost genuinely dominates.
 
 **Quick tier (native apps).** Bundling cannot see runtime-only failures (an
-undeclared native dependency red-screens the app while `expo export` passes).
-After any dependency change, run a cheap boot-and-smoke check early — app
-reaches its first screen, booted bundle = HEAD. Supplements the protocol; a
-phase verdict still requires the full four steps once per cycle.
+undeclared native dependency red-screens while `expo export` passes). After
+any dependency change, run a cheap boot-and-smoke check early — app reaches
+its first screen, booted bundle = HEAD. Supplements the protocol; a phase verdict still requires the full four steps once per cycle.
 
 ## Red flags
 
@@ -144,7 +143,8 @@ phase verdict still requires the full four steps once per cycle.
 
 Verdict per truth, gap count, evidence collected. Route non-gap findings —
 your own judgment calls and the blind verifier's non-blocking observations —
-into STATE.md's ## Fog, one line each, tagged `from cycle-N verifier` —
-blocking human calls go to ## Decision queue with added/expires dates instead.
+into STATE.md's ## Fog, one line each, tagged `from cycle-N verifier`; items
+recording an observed failure get `- [defect]` at line start. Blocking human
+calls go to ## Decision queue with added/expires dates instead.
 Nothing evaporates. Clean → `/potion:ship`. Gaps → `/potion:plan` gaps mode
 (mention the cycle number).

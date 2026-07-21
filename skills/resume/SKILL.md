@@ -28,9 +28,19 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Restore position from disk, verify
    every phases/*/RUNBOOK-*.md lacking its SUMMARY for `expires: YYYY-MM-DD`
    values that have passed; each expired gate is surfaced in the step-4 brief
    as decide-renew-or-abandon (renewal = one conscious line bumping expires).
+   **Grammar-drift sweep:** run the five checks — `test -f
+   .potion/verify-env.md`, `grep -q '^## Fog' .potion/STATE.md`, `grep -q
+   '^## Decision queue' .potion/STATE.md`, `test -d .potion/specs`, `test -f
+   .potion/scripts/pre-commit.js`, plus `grep -q '^## Parked'
+   .potion/STATE.md` for the legacy flag. Any failing check (or a Parked
+   hit) is queued for the step-4 brief as one line: "grammar drift:
+   {missing list} — offer /potion:update (notice only; resume never
+   migrates)". Do not create, edit, or commit anything — /potion:update is
+   the only mutating lane.
    Done when: every
    listed hash is found in `git log`, `.potion/` shows no conflict markers,
-   and expired gates (if any) are queued for the brief.
+   expired gates (if any) are queued for the brief, and drift findings (if
+   any) are queued for the brief.
 
 3. Surface the top 3 relevant learnings from `.potion/learnings.jsonl` (newest
    wins per key; skip entries whose `files` no longer exist — flag those as stale).
@@ -38,7 +48,10 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Restore position from disk, verify
    Done when: up to 3 keys are named in the brief (or none exist, and you say so).
 
 4. Brief the user in 5 lines: position, last session's stopping point, decisions
-   made there, the next action. If continue-here.md's `Dirty tree` field records
+   made there, the next action. If step 2's grammar-drift sweep queued
+   findings, include its one line: "grammar drift: {missing list} — offer
+   /potion:update (notice only; resume never migrates)."
+   If continue-here.md's `Dirty tree` field records
    a WIP commit, say so: "you are mid-task N, WIP commit {hash} holds partial
    work." If the phase is stalled on a human gate (STATE status blocked, or
    Blockers/continue-here naming a waiting-on-human item) AND an unexecuted

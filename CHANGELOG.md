@@ -1,5 +1,88 @@
 # Changelog
 
+## 1.14.0 — 2026-07-21
+
+The distribution release: shipped mechanisms now reach already-installed
+repos. A dedicated `/potion:update` skill diffs a repo's `.potion` grammar
+against current templates and applies migrations mechanically — one summary
+commit, idempotent, no-clobber honored, every judgment call routed to a
+human. Session start and `/potion:resume` surface grammar drift as a
+warn-only notice pointing at the update lane, and observed defects get a
+write-time `- [defect]` tag that verify/discuss/plan promote mechanically
+instead of letting them rot in Fog. Verified in one cycle: 15/15 truths
+runtime-verified, 12/12 artifacts through the blind ladder, 0 gaps — and
+proven live by migrating partner-repo, a real installed repo.
+
+### Update lane (new skill)
+- `/potion:update` — the dedicated, human-invoked grammar-migration entry
+  point: state-keyed M1–M6 detector+transform table (verify-env, three-bucket
+  STATE, specs bootstrap, repo-side hooks, housekeeping lines, escalations
+  offer-never-write) and a four-step flow: preflight report → go →
+  one-summary-commit mechanical pass → one-at-a-time Parked triage → offer +
+  exit report (6a0f4b1; detectors tightened to runnable POSIX sh ae4b75f;
+  spec `update-lane/update-dedicated-entrypoint`). README utilities line
+  names the lane (0e2bb8f); summary 6b2261a; merged 3187c67.
+- Firing migrations land in ONE `chore(potion): update — grammar migrations
+  (…)` commit naming the applied ids; current detectors are skipped
+  independently; a fully current repo is a clean no-op — "grammar current —
+  nothing to migrate", zero commits (specs
+  `update-lane/update-mechanical-one-commit`, `update-idempotent`).
+- Judgment stays human: legacy Parked items triaged one at a time with a
+  recommendation, each routed by a one-line human call; hook install honors
+  the phase-19 no-clobber refusal (`--force` only on explicit word); the
+  escalations registry is offered, never written (specs
+  `update-lane/update-interactive-triage`, `update-no-clobber-hooks`,
+  `update-escalations-offer-only`).
+
+### Drift notice
+- Session-start hook grows a grammar-drift leg: five fs/string checks plus a
+  legacy-Parked flag print a POTION GRAMMAR DRIFT block naming exactly what's
+  missing and pointing at `/potion:update` — warn-only, fail-open in its own
+  try/catch, silent on current and non-potion repos (57a0bdd; specs
+  `drift-notice/drift-notice-warn-only`, `drift-notice-fail-open`,
+  `drift-notice-silent-when-current`).
+- `/potion:resume` runs the same sweep in step 2 and carries the finding into
+  its brief — notice only, resume never migrates (0645885); summary 09be31b;
+  merged 354eb42.
+
+### [defect] tag promotion
+- Write-time grammar: an observed failure is recorded as a line-start
+  `- [defect] ` bullet; untagged prose stays ordinary fog — no touch-time
+  inference, ever. Grammar and routing rule live in CORE.md Bucket homes and
+  the STATE template (aaca94f; spec `defect-promotion/defect-write-time-tag`).
+- Promotion on touch: verify's step-1 sweep promotes surviving tagged lines
+  to gaps before any verdict and its exit instructs write-time tagging;
+  discuss promotes to the Decision queue before any fork is discussed —
+  removal from the bucket rides the same edit (bbd0824; spec
+  `defect-promotion/defect-promotion-on-touch`).
+- Plan reads the promotion list first and hard-stops on any unpromoted
+  `- [defect]` line (df5c740; spec
+  `defect-promotion/plan-reads-promotion-list-first`); summary de0968f;
+  merged c0487e8.
+
+### Proof
+- Fixture dogfood matrix: full migration in one commit (CASE A), partial
+  skip (CASE B), idempotent re-run with foreign hook byte-identical
+  (CASE C2), no-clobber refusal surfaced verbatim, simulated triage routes
+  landed (28e19ae) — CASE C1 caught a real M4 detector re-fire, fixed in the
+  shipped skill under [Rule 1]. Drift-notice matrix D1–D3 plus the [defect]
+  plan hard-stop probe, verbatim stdout (f7b0fbe); summary 24cdd6f.
+- Live proof (RUNBOOK-05): partner-repo — a real installed repo — migrated by
+  Ian's hand: 5-item drift block observed, preflight → go, migrations M1–M5
+  in one commit (partner-repo 0b3c3e9), 7 Parked items triaged by real human
+  calls, escalations declined and honestly absent.
+
+### Verification & bookkeeping
+- Cycle-1 verify: blind ladder 12/12 artifacts VERIFIED, fresh
+  orchestrator-run drift matrix and partner-repo re-check at HEAD, 3 headless
+  [defect]/resume probes, 22/22 ratchet checks green (b497f22); spec merge
+  9431311.
+- Phase records: discussion f7070a3, plans 5d84499, wave positions
+  af6b46b / 96372be, completion b562dba.
+- README count honesty: "Eleven skills" prose and the `skills-11` badge
+  undercounted the thirteen skills the README itself enumerates — corrected
+  in this release commit.
+
 ## 1.13.0 — 2026-07-21
 
 The escalation-lane release: recurring gated mutations stop re-begging for

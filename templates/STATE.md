@@ -23,7 +23,7 @@
 
 ## Fog
 
-<!-- In-scope, not yet precisely stateable. Cap 6, one line each, tagged with source. Read by /potion:discuss. -->
+<!-- In-scope, not yet precisely stateable. Cap 6, one line each, tagged with source. Read by /potion:discuss. Lines recording an observed failure start `- [defect]` — verify/discuss promote them mechanically (see CORE.md Bucket homes). -->
 - {none yet}
 
 ## Decision queue

@@ -38,6 +38,12 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    Deferred is untouchable. Done only when `phases/NN-slug/DISCUSSION.md`
    exists — absent means run /potion:discuss first.
 
+   **Promotion preflight:** read the promotion list first — the current
+   phase's VERIFICATION.md `gaps:` and STATE's Decision queue; then
+   `grep -n '^- \[defect\]'` STATE.md — a surviving `- [defect] ` line means
+   verify/discuss skipped a promotion: STOP and promote it (same routing
+   rule) before writing any plan.
+
    **Gate preflight:** read DISCUSSION.md's `gates:` frontmatter. Work blocked on
    a `hitl` gate becomes RUNBOOK-{NN}.md (from `${CLAUDE_PLUGIN_ROOT}/templates/RUNBOOK.md`)
    in the phase's plan numbering and wave order — never an executable PLAN;
