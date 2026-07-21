@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 280" width="880" role="img" aria-label="Potion — plans are prompts, disk is memory, evidence or it didn't happen">
+  <rect x="0.5" y="0.5" width="879" height="279" rx="20" fill="#0E0819" stroke="#251A3A"/>
+  <g stroke-linecap="round">
+    <path d="M90,122 L90,196 Q90,216 105,216 Q120,216 120,196 L120,122 Z" fill="#7C3AED"/>
+    <circle cx="101" cy="202" r="3" fill="#A87FE0" opacity="0.85"/>
+    <circle cx="111" cy="186" r="2.5" fill="#A87FE0" opacity="0.85"/>
+    <circle cx="98" cy="172" r="2" fill="#C3A9F2" opacity="0.9"/>
+    <line x1="90" y1="122" x2="120" y2="122" stroke="#9B6BF5" stroke-width="2.5"/>
+    <path d="M90,52 L90,196 Q90,216 105,216 Q120,216 120,196 L120,52" fill="none" stroke="#7A5EB0" stroke-width="3"/>
+    <line x1="83" y1="52" x2="127" y2="52" stroke="#7A5EB0" stroke-width="3.5"/>
+    <g stroke="#463A66" stroke-width="2">
+      <line x1="90" y1="76" x2="106" y2="76"/>
+      <line x1="90" y1="94" x2="100" y2="94"/>
+      <line x1="90" y1="112" x2="106" y2="112"/>
+    </g>
+    <g stroke="#B79BEE" stroke-width="2">
+      <line x1="90" y1="150" x2="100" y2="150"/>
+      <line x1="90" y1="180" x2="106" y2="180"/>
+    </g>
+    <line x1="96" y1="66" x2="96" y2="150" stroke="#FFFFFF" stroke-width="2" opacity="0.28"/>
+  </g>
+  <text x="182" y="64" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="15" letter-spacing="4" fill="#A98CD9">A&#160;CLAUDE&#160;CODE&#160;PROJECT&#160;LOOP</text>
+  <text x="180" y="134" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="72" font-weight="800" letter-spacing="6" fill="#F3EEFB">POTION</text>
+  <text x="182" y="172" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="18" fill="#C4B8DB">plans are prompts&#160;&#160;&#183;&#160;&#160;disk is memory&#160;&#160;&#183;&#160;&#160;<tspan fill="#FFFFFF" font-weight="700">evidence or it didn't happen</tspan></text>
+  <line x1="182" y1="196" x2="706" y2="196" stroke="#251A3A" stroke-width="1"/>
+  <text x="182" y="226" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="15" letter-spacing="1" fill="#9A86C4">init&#160;&#8250;&#160;discuss&#160;&#8250;&#160;plan&#160;&#8250;&#160;execute&#160;&#8250;&#160;<tspan fill="#34D399" font-weight="700">verify</tspan>&#160;&#8250;&#160;ship</text>
+</svg>
