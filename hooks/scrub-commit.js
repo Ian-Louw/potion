@@ -26,11 +26,23 @@ const PATTERNS = [
   },
 ];
 
+const SIZE_CAP_BYTES = 256 * 1024;
+
 function block(patternName, file) {
   process.stderr.write(
     `POTION SCRUB: blocked — ${patternName} in ${file}. ` +
       "Secrets never enter .potion/ commits. If this is a false positive, " +
       "the human can commit manually.\n"
+  );
+  process.exit(2);
+}
+
+function blockOversize(file, bytes) {
+  process.stderr.write(
+    `POTION SCRUB: blocked — ${file} is ${Math.round(bytes / 1024)} KB ` +
+      `(cap ${SIZE_CAP_BYTES / 1024} KB). Trim evidence to the relevant ` +
+      "window — raw multi-MB logs never enter .potion/. If the full file " +
+      "is genuinely needed, the human can commit manually.\n"
   );
   process.exit(2);
 }
@@ -179,6 +191,28 @@ function main() {
           rel
         );
       }
+    }
+  }
+
+  // Evidence-hygiene size leg (F-22): oversize .potion/ files block like
+  // secrets do. Working-tree stat, not diff text — binary diffs truncate.
+  const sizeCandidates = new Set();
+  for (const args of [
+    'diff --cached --name-only -- ".potion/"',
+    'diff HEAD --name-only -- ".potion/"',
+  ]) {
+    for (const line of git(args, cwd).split("\n")) {
+      const t = line.trim();
+      if (t) sizeCandidates.add(t);
+    }
+  }
+  for (const name of sizeCandidates) {
+    try {
+      const st = fs.statSync(path.join(cwd, name));
+      if (st.isFile() && st.size > SIZE_CAP_BYTES) blockOversize(name, st.size);
+    } catch {
+      // Deleted/renamed file: fail open, per-file.
+      continue;
     }
   }
 

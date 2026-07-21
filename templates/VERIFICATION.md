@@ -1,7 +1,8 @@
 ---
 phase: "{NN-slug}"
 verdict: "{pass | gaps | escalated}"
-verified_at: "{ISO datetime — ship compares this against the newest code commit}"
+verified_at: "{ISO datetime from date -Iseconds — human-readable; NOT a gate input}"
+tested_sha: "{git rev-parse HEAD at verify time — ship's staleness gate compares non-.potion commits after this SHA}"
 cycle: 1                      # increments each verify pass; 3 is the budget
 gaps:                         # empty list when verdict: pass
   - truth: "{the must-have truth}"

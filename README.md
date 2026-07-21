@@ -4,7 +4,7 @@
 
 <em>The magic potion for Claude Code — plans are prompts, disk is memory,<br/>evidence or it didn't happen.</em>
 
-[![License](https://img.shields.io/github/license/Ian-Louw/potion)](LICENSE) [![Release](https://img.shields.io/github/v/release/Ian-Louw/potion)](https://github.com/Ian-Louw/potion/releases) ![Skills](https://img.shields.io/badge/skills-13-blueviolet) ![Agents](https://img.shields.io/badge/agents-2-blueviolet) ![Hooks](https://img.shields.io/badge/hooks-1-blueviolet) ![Brewed with itself](https://img.shields.io/badge/brewed_with-itself-8A2BE2)
+[![License](https://img.shields.io/github/license/Ian-Louw/potion)](LICENSE) [![Release](https://img.shields.io/github/v/release/Ian-Louw/potion)](https://github.com/Ian-Louw/potion/releases) ![Skills](https://img.shields.io/badge/skills-13-blueviolet) ![Agents](https://img.shields.io/badge/agents-2-blueviolet) ![Hooks](https://img.shields.io/badge/hooks-4-blueviolet) ![Brewed with itself](https://img.shields.io/badge/brewed_with-itself-8A2BE2)
 
 </div>
 
@@ -19,9 +19,9 @@ Plus utilities: `/potion:pause` · `/potion:resume` · `/potion:learn` ·
 `/potion:investigate` · `/potion:pair` · `/potion:update` — and **`/potion:brew`** runs the whole crank
 end-to-end, stopping only at human gates.
 
-**Thirteen skills. Two agents. One hook.** No ceremony. This repo's own
-`.potion/` is the live proof — potion brews itself, and it red-teamed its
-own verifier with five seeded defects. It caught all five.
+**Thirteen skills. Two agents. Four hooks.** No ceremony. Potion brews
+itself — every release was developed in a potion-managed repo, and it
+red-teamed its own verifier with five seeded defects. It caught all five.
 
 ## ⚡ Why
 
@@ -134,7 +134,7 @@ and kill switches, not vibes:
 | Loop layer | Potion mechanism |
 |---|---|
 | Contract | `must_haves` (truths / artifacts / key links) + locked decisions |
-| State | `.potion/` — progress derived from artifacts on disk; strays route to `## Parked`, nothing evaporates; session continuity is rewritten whenever Position moves |
+| State | `.potion/` — progress derived from artifacts on disk; strays route to fog, the decision queue, or the out-of-scope ledger — nothing evaporates; session continuity is rewritten whenever Position moves |
 | Checker | blind verifier: deterministic checks first, then exists → substantive → wired; runtime proof lands in `evidence/` and VERIFICATION.md cites it by path; evidence only counts against a fresh build serving HEAD |
 | Budgets | 3-strike fix breaker, 3-cycle gap-flywheel cap (counter on disk), quick-task ratchet |
 | Human checkpoint | Rule 4 deviations, `human_needed` flags, ship gate |
@@ -157,14 +157,12 @@ graph TB
   D -->|"progress = artifacts, never a status field"| O
 ```
 
-> **Built with itself:** this repo's [`.potion/`](.potion/) is a real Potion
-> project — the loop above brewed
-> [every release](https://github.com/Ian-Louw/potion/releases). Then the
-> mischief audit ([`.potion/phases/09-mischief/`](.potion/phases/09-mischief/))
-> red-teamed the verifier itself: five classed defects seeded behind a sealed
-> answer key — stub, wired-but-wrong, phantom commit, orphaned artifact,
-> missing artifact. Caught 5/5, and it flagged the fabricated "verified live"
-> claims unprompted.
+> **Built with itself:** potion is developed in a potion-managed working
+> repo — the loop above brewed every release in this changelog. A mischief
+> audit then red-teamed the verifier itself: five classed defects seeded
+> behind a sealed answer key — stub, wired-but-wrong, phantom commit,
+> orphaned artifact, missing artifact. Caught 5/5, and it flagged the
+> fabricated "verified live" claims unprompted.
 
 The Operator Test governs everything: *if the agent cannot prove it is done,
 you are not engineering a loop — you are automating drift.*
@@ -201,11 +199,13 @@ the verifier runs on every pass.
 potion/
 ├── core/CORE.md            # shared contract: voice, questions, evidence, statuses
 ├── skills/                 # init, discuss, plan, execute, verify, ship, brew,
-│                           #   pause, resume, learn, investigate
+│                           #   pause, resume, learn, investigate, pair, update
 ├── agents/                 # potion-worker (executor), potion-verifier (auditor)
-├── hooks/                  # session-start: restores position + surfaces learnings
-├── templates/              # PROJECT.md, STATE.md, PLAN.md, SUMMARY.md,
-│                           #   VERIFICATION.md, continue-here.md
+├── hooks/                  # session-start (position + drift notices), secret/size
+│                           #   scrubber, escalation approver, stop-drift nudge
+├── templates/              # PROJECT.md, STATE.md, PLAN.md, RUNBOOK.md, SUMMARY.md,
+│                           #   VERIFICATION.md, spec.md, verify-env.md, escalations.md,
+│                           #   continue-here.md
 └── PHILOSOPHY.md
 ```
 
@@ -219,16 +219,20 @@ State lives in your repo at `.potion/`:
 ```
 .potion/
 ├── PROJECT.md              # goals, locked decisions, out-of-scope (with why)
-├── STATE.md                # <60-line digest: position, recent decisions, resume point
+├── STATE.md                # <60-line digest: position, fog, decision queue, resume point
 ├── learnings.jsonl         # append-only insights, newest-wins
 ├── knowledge/              # distilled pages — regenerable cache over the journal
+├── verify-env.md           # runtime session recipe, or `none-needed: <why>` — never absent
+├── verify-env.local        # secret values for the recipe (gitignored)
+├── specs/                  # current truth: GIVEN/WHEN/THEN per capability, merged on ship
 ├── continue-here.md        # transient pause file (deleted on resume)
 └── phases/NN-slug/
-    ├── DISCUSSION.md       # Decisions / Claude's Discretion / Deferred
+    ├── DISCUSSION.md       # Decisions / Claude's Discretion / Deferred (+ gates)
     ├── PLAN-NN.md          # the prompt an executor runs verbatim
+    ├── RUNBOOK-NN.md       # human-gate steps — a numbered peer of PLAN
     ├── SUMMARY-NN.md       # existence of this file = plan complete
-    ├── VERIFICATION.md     # ladder results + structured gaps
-    └── evidence/           # runtime proof artifacts, referenced by path from VERIFICATION.md
+    ├── VERIFICATION.md     # ladder results, structured gaps, tested SHA
+    └── evidence/           # runtime proof artifacts + generated INDEX.md, cited by path
 ```
 
 </details>
@@ -246,7 +250,7 @@ zero-setup trial. Either way, install the whole plugin — do NOT copy `skills/`
 alone into a skills directory: the shared contract in `core/`, the `templates/`,
 `hooks/`, and `agents/` are load-bearing and only load through the plugin system.
 
-Only runtime dependency: `node` on PATH (for the session-start hook).
+Only runtime dependency: `node` on PATH (for the hooks).
 
 ## Credits
 

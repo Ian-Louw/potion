@@ -25,9 +25,13 @@ at most once.
    if it records an explicit user statement (who + date + their words or a
    paraphrase). You may PROPOSE accepting a gap; only the user accepts.
    Self-recorded acceptance is a gate violation, not a shortcut.)
-   **Staleness check:** compare `verified_at` against the newest commit
-   touching non-`.potion` files — any code commit after verification means the
-   verification describes code that no longer exists → re-run /potion:verify.
+   **Staleness check:** run `git log --oneline {tested_sha}..HEAD -- . ':(exclude).potion'`
+   using the frontmatter's `tested_sha` — ANY output means code moved past the
+   verified SHA → re-run /potion:verify. Commits touching only `.potion/` are
+   exempt by construction. A VERIFICATION.md with no `tested_sha` field is a
+   pre-phase-21 record: treat it as stale and re-run /potion:verify (the fresh
+   pass writes the field). `verified_at` is human-readable context, not a gate
+   input.
    No verification at all → run /potion:verify first. This gate does not
    negotiate.
 
@@ -40,6 +44,8 @@ at most once.
    .potion/specs/. Nonzero exit → STOP and show the CONFLICT/MALFORMED output;
    the human edits deltas or specs and re-runs — never hand-merge. Applied ops →
    commit `docs(potion): phase NN spec merge`. No deltas is a clean no-op.
+   Merging another phase's deltas here requires the explicit cross-note in
+   both phases' records (independent-ship rule).
 
 4. **Evidence gate** (from CORE.md): identify the command that proves the branch
    works, run it fresh, read the output. "It passed before the merge" → run it again.

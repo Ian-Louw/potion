@@ -22,6 +22,8 @@ at most once.
 ## Steps
 
 1. Read `.potion/STATE.md` and `.potion/PROJECT.md`. Identify the target phase.
+   If a foreign planning grammar (`.planning/`, superpowers) exists alongside
+   `.potion/`, confirm the recorded bridge still holds.
    If the phase's goal implies runtime-proof truths and `.potion/verify-env.md`
    is absent, ask the verify-env question now (recipe or `none-needed: <why>` —
    see `templates/verify-env.md`) and write the file; planning will refuse

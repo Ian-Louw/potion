@@ -100,7 +100,11 @@ steps the human completed between sessions confirm mechanically.
 
 Qualifying conditions: the four in the orchestration contract above — all
 must hold. Still mandatory: atomic commit, evidence gate
-before claiming done, one-line note in STATE.md. Quick tasks skip
+before claiming done, one-line note in STATE.md.
+Evidence files: before writing, run `git check-ignore -q <name>` from the
+host repo root — an ignored name (e.g. `*.log`) gets a non-ignored one
+(`.txt`); trim raw logs to the relevant window (the scrubber blocks
+.potion/ files over 256 KB). Quick tasks skip
 `<spec_deltas>` unless they change specced behavior — then write the delta and
 run `scripts/merge-specs.sh` in the same session. The ratchet: the third
 consecutive quick task on a project is a phase wearing a disguise — stop and

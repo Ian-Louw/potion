@@ -40,7 +40,9 @@ not by archaeology.
    Unpushed field is filled.
 
 4. Update STATE.md: status `paused`, Session Continuity block pointing at
-   continue-here.md. Done when: STATE.md's status line reads `paused`.
+   continue-here.md, including one line naming any dirty/untracked paths
+   outside `.potion/` (or `clean`). Done when: STATE.md's status line reads
+   `paused`.
 
 5. Commit both. Done when: `git log -1 --oneline` shows
    `chore(potion): pause checkpoint`.

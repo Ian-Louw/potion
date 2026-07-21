@@ -1,5 +1,61 @@
 # Changelog
 
+> Potion is developed in a private potion-managed working repo (the ultimate
+> dogfood). Commit hashes and evidence paths cited below refer to that repo's
+> history; this public repo carries one clean commit per release.
+
+## 1.15.0 — 2026-07-21
+
+The verify-burrs release: cycle 3 closes. Evidence files can no longer bloat
+or collide (256 KB hook block + write-time gitignore probe), staleness is now
+a mechanical SHA comparison instead of a hand-adjacent timestamp, and the
+five Tier-3 craft lines from the field-evidence doc land in the files that
+execute them. Verified in one cycle: 12/12 truths + 5/5 spec scenarios
+runtime-verified, 11/11 artifacts through the blind ladder, 0 gaps — and the
+new SHA gate's first live use was gating this very ship.
+
+### Evidence hygiene (Tier-1 #7, F-22/32)
+- scrub-commit.js gains a size leg: a changed `.potion/` file over 256 KB
+  blocks the in-session commit with a trim instruction, exactly like a
+  secret hit — override is the human committing manually; `.potion/`-scoped,
+  every error path fails open (8cb59f8; 4-case fixture matrix 9ecc089;
+  summary 0355b88; merged 2c59905; specs `evidence-hygiene/
+  size-cap-blocks-commit`, `size-cap-scope-and-failure`).
+- Prompt-side half: execute and verify check `git check-ignore -q` on the
+  chosen evidence filename before writing and trim raw logs to the relevant
+  window (197099d; spec `evidence-hygiene/gitignore-collision-check`).
+
+### Tested-SHA pinning (Tier-1 #8, F-31)
+- VERIFICATION.md frontmatter gains `tested_sha`, recorded mechanically via
+  `git rev-parse HEAD` at verify time; `verified_at` is demoted to
+  human-readable context (00d2255; summary 8887de6; merged 31ee5b3; spec
+  `sha-pinning/verification-records-tested-sha`).
+- Ship's staleness gate is now `git log {tested_sha}..HEAD -- .
+  ':(exclude).potion'` — any non-.potion commit after the tested SHA means
+  stale; docs-only commits are exempt by construction; a missing field is
+  treated as stale outright (c73ae0b; fixture matrix e51d1e4; spec
+  `sha-pinning/ship-staleness-compares-sha`).
+
+### Tier-3 craft sweep + fog folds
+- The five craft lines, each in its executing file: dual-grammar bridge
+  (init+discuss, F-34), test-idiom capture (verify, F-40),
+  checkpoint-decision provenance (continue-here template, F-36), dirty-tree
+  honesty (pause, F-17), independent-ship rule (plan+ship, F-37) — all skill
+  caps held, verify and plan at exactly 150 (d7a03b6).
+- Three fog folds: RUNBOOK `expires` must render a literal date, escalations
+  note that a grant padded inside its quotes fails closed, plan's escalation
+  preflight states its resume mechanics (af00b8d; craft-grep matrix +
+  live check-ignore probe 9c90b9d).
+
+### Phase record
+- Discussion 420cf60, plans 85a1c8b, wave-1 position e2304cd, plan-03
+  summary aeb637a, phase complete b63a09c, this release commit.
+- Verification: cycle-1 pass — blind ladder clean, orchestrator re-proved
+  size cap and SHA gate on fresh fixtures, 3 new phase-21 witnesses
+  (ci-verify 25/25), 0 new ordinary learnings (d07087d); spec merge b68ccad.
+- Housekeeping: M4 grammar migration applied to this repo via the phase-20
+  update lane (d0abe4b).
+
 ## 1.14.0 — 2026-07-21
 
 The distribution release: shipped mechanisms now reach already-installed

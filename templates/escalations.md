@@ -20,6 +20,10 @@ The `command` value MUST be double-quoted and must not contain double quotes
 or newlines. Other values may be unquoted. Every grant carries a mandatory
 `expires` date — an entry without one is never approved.
 
+Pad nothing inside the quotes: the hook trims the INCOMING command but
+matches the registry command verbatim — spaces inside the quotes create a
+grant that never matches (fails closed).
+
 ## Grants
 
 - {escalation: "deploy-prod", wrapper: "scripts/deploy.sh", command: "sh scripts/deploy.sh --prod", granted_by: "ian", added: 2026-07-20, expires: 2026-10-18}

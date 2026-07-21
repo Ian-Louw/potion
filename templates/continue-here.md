@@ -31,7 +31,9 @@ Unpushed: {in sync | N commits ahead of origin | no upstream}
 
 ## Decisions made
 
-- {decision + why — so next session doesn't re-debate it}
+- {decision + why — so next session doesn't re-debate it; a decision
+  superseding a same-day checkpoint answer MUST cite the superseded commit
+  hash}
 
 ## Next action
 

@@ -17,7 +17,7 @@ SUMMARY documents what an agent SAID; verification checks what exists. Task comp
 - Verdict `pass` ONLY when every truth is VERIFIED, HUMAN_NEEDED
   acknowledged this cycle, or COULD_NOT_CHECK converted by the user this
   cycle — an unconverted COULD_NOT_CHECK can never pass.
-- `verified_at` from fresh `date -Iseconds` — a hand-typed timestamp has tripped the ship gate once already.
+- `verified_at` from `date -Iseconds` and `tested_sha` from `git rev-parse HEAD` — both derived mechanically, never typed (a hand-typed value has tripped the ship gate once already).
 - Runtime proof is an evidence path, not a claim.
 Before finishing, re-read the emitted VERIFICATION.md against this block;
 fix in place, or regenerate it — at most once.
@@ -63,10 +63,10 @@ truth gets a live pass: start the app/tool yourself (if Claude can run it,
 Claude runs it) and exercise the truth. Where a browser tool exists, diff
 pattern: snapshot → act → snapshot-diff — a state diff is proof, a claim is
 not. Proof artifacts land in `phases/NN-slug/evidence/` named
-`{plan-or-cycle}-{slug}.{ext}` (e.g. `03-share-flow.png`); VERIFICATION.md's
-Runtime evidence column references them by path — a path is checkable, a
-claim is not. CLI/library/pipeline equivalent: one real invocation /
-import-and-call in a scratch script.
+`{plan-or-cycle}-{slug}.{ext}` — `git check-ignore -q` the name first
+(ignored → rename), trim to the relevant window; VERIFICATION.md's Runtime
+evidence column references them by path — a path is checkable, a claim is
+not. CLI/library/pipeline equivalent: one real invocation / import-and-call in a scratch script.
 Cross-check each SUMMARY's task→commit table against `git log` — "do not
 trust summaries" includes their hashes. Use the verify-env recipe for live
 sessions. A truth blocked ENVIRONMENTALLY (closed reasons per CORE.md) is
@@ -80,10 +80,10 @@ ONE checkpoint at the end (verification fatigue is real).
 cold: sweep the phase's SUMMARY Deviations and Concerns, the verifier's
 ladder/panel reasoning in VERIFICATION.md, and any .potion/debug/ files
 closed during the phase. Log what clears the 5-minute bar as ordinary
-learnings (files field → source artifact), max 5 entries — distillation, not
-transcription. Grep learnings.jsonl for existing keys first: never re-log.
-Zero new entries is a valid outcome — say so explicitly. Qualifying entries
-ride the normal promote-up bar (CORE: Cross-repo knowledge).
+learnings — a repo whose testing is bespoke script chains gets its idiom
+promoted to a type:check witness at first verify touch (files → source),
+max 5 — distillation, not transcription. Grep learnings.jsonl for existing
+keys first: never re-log. Zero new entries is a valid outcome — say so explicitly. Qualifying entries ride the normal promote-up bar (CORE: Cross-repo knowledge).
 
 **Witnesses.** When promoting a gap-fix or a truth whose proof is a
 distinctive code marker, append a `type:check` witness — key
@@ -98,7 +98,7 @@ the environment or ask the human, in that order.
 
 Update `phases/NN-slug/VERIFICATION.md` from
 `${CLAUDE_PLUGIN_ROOT}/templates/VERIFICATION.md` — mandatory frontmatter:
-`verdict`, `verified_at` (ISO datetime), `cycle` (increment on each pass),
+`verdict`, `verified_at`, `tested_sha` (git rev-parse HEAD), `cycle` (increment on each pass),
 `gaps` (truth / status / reason / missing), `accepted` (user-acknowledged gaps).
 
 **Evidence index.** After filling VERIFICATION.md, (re)generate the index

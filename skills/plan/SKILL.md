@@ -58,8 +58,8 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    exist with `expires` today-or-later. Missing or expired → STOP and ask the
    human, presenting a ready-to-paste registry line (grammar in
    templates/escalations.md, 90-day default expiry) — the human edits and commits
-   the registry, then planning resumes. Undeclared commands still wall at run
-   time; declaring is what makes the lane sanctioned.
+   the registry, then planning resumes by re-running this preflight.
+   Undeclared commands still wall at run time; declaring is what makes the lane sanctioned.
 
 2. If the phase needs research (unfamiliar library, external API), do a focused
    pass now and write findings into the plans' `<context>` — not a separate
@@ -95,6 +95,7 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    (or establishes behavior worth speccing) carries a `<spec_deltas>` section
    per templates/PLAN.md — full requirement text, IDs per the spec format.
    Ship merges them mechanically; a missing delta means the spec silently rots.
+   A phase's specs may ride another phase's ship only with an explicit note in BOTH phases' records — silent spec hitchhiking is F-37.
 
    Inline everything the executor needs in `<context>` — the plan is the ONLY
    thing the worker is guaranteed to read, and a worker sent hunting through the

@@ -13,7 +13,7 @@
 
 Secret values — including fixture-account passwords — live in
 `.potion/verify-env.local` (gitignored) as KEY=value, never in this file.
-Reference them BY NAME (e.g. `password: see PARTNER_APP_PROD_FIXTURE_PASSWORD
+Reference them BY NAME (e.g. `password: see APP_PROD_FIXTURE_PASSWORD
 in verify-env.local`). Every declared value doubles as a literal scrub
 pattern: the commit hook blocks any commit containing it.
 

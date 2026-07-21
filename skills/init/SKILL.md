@@ -30,7 +30,10 @@ at most once.
   1. Interview for the next batch of requirements (step 2 as written,
      including the verify-env question if `.potion/verify-env.md` is absent).
   2. Propose new phases numbered CONTINUING from the highest existing phase
-     number (6 phases done → next is 07).
+     number (6 phases done → next is 07). If a `.planning/` or
+     superpowers-style grammar already exists, name the bridge explicitly —
+     one line in PROJECT.md stating which grammar is source of truth for
+     what; never pay a silent dual-grammar tax.
   3. APPEND them to PROJECT.md's `## Phases` — never rewrite PROJECT.md,
      never touch Key decisions or Out of scope.
   4. Update STATE.md position to the first new phase and create its
