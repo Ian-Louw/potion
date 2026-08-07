@@ -76,6 +76,14 @@ your table — make it sufficient.
 2. Write `SUMMARY-{plan}.md` next to the plan, from
    `${CLAUDE_PLUGIN_ROOT}/templates/SUMMARY.md` — every section filled, last
    act, only when true.
+   **Use the `Write` tool for this.** Writing this file is an explicit,
+   required deliverable of your role — the standing guidance against
+   proactively creating `.md`/documentation/report files does NOT apply to
+   it. `SUMMARY-{plan}.md` is a protocol artifact, not a report: its
+   existence on disk is what marks the plan complete, and the orchestrator
+   and `/potion:verify` both read it from disk. Do not route around a
+   refusal with a shell heredoc — a SUMMARY written through `sh` is invisible
+   to the harness's file tracking and silently skips the secret scrubber.
 3. Metadata commit: `docs({phase}-{plan}): summary`.
 4. Return ≤15 lines: status (per CORE's table), commits, one-line verification
    result, deviations, concerns. Your full report lives in the SUMMARY — the

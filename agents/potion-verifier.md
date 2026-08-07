@@ -69,6 +69,13 @@ VERIFICATION.md (create it from `${CLAUDE_PLUGIN_ROOT}/templates/VERIFICATION.md
 if absent — leave verdict/runtime fields for the orchestrator). Return ≤15
 lines: truths by status, artifact statuses, broken links found.
 
+**Use the `Write`/`Edit` tools for VERIFICATION.md.** It is an explicit,
+required deliverable of your role — the standing guidance against proactively
+creating `.md`/documentation/report files does NOT apply to it. VERIFICATION.md
+is a protocol artifact, not a report: the orchestrator reads it from disk to
+promote STATIC_ONLY truths and to compute the phase verdict. Do not route
+around a refusal with a shell heredoc.
+
 In re-verification mode (after gap closure): failed items get the full ladder;
 previously-passed items get one quick regression grep each. A regression is
 worse than a gap — lead with it.

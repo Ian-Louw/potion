@@ -63,8 +63,21 @@ function main() {
         if (!m) continue;
         const nn = m[1];
         if (fs.existsSync(path.join(phaseDir, `SUMMARY-${nn}.md`))) continue;
-        // Loose plan-tag match: `({NN}-{XX}` or `…-{XX})` — warn, never over-claim.
-        if (log.includes(`(${phaseNum}-${nn}`) || log.includes(`-${nn})`)) {
+        // Plan-tag match, anchored to THIS phase: `({slug}-{XX})` (the
+        // `feat(02-real-accounts-01):` convention) or a terser `({NN}-{XX})`.
+        // Both must carry the phase, and both must close the paren.
+        //
+        // The previous fallback was a bare `-{XX})`, which carried no phase at
+        // all: any earlier phase's `docs(01-tenant-foundation-01): summary`
+        // sitting in `git log -30` made a freshly-planned phase 02 report
+        // PLAN-01/02/03 as drifting, purely because those numbers had been used
+        // before. That is a false positive whose only "fix" — writing the
+        // SUMMARY files — silently marks unexecuted plans complete, since
+        // /potion:execute derives completion from SUMMARY existence.
+        if (
+          log.includes(`(${phaseSlug}-${nn})`) ||
+          log.includes(`(${phaseNum}-${nn})`)
+        ) {
           defects.push(`PLAN-${nn} has commits but no SUMMARY-${nn}`);
         }
       }

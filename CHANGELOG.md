@@ -4,6 +4,43 @@
 > dogfood). Commit hashes and evidence paths cited below refer to that repo's
 > history; this public repo carries one clean commit per release.
 
+## 1.15.1 — 2026-08-07
+
+Two field-observed defects in the execute loop. No grammar change, no new
+mechanism — both were quietly costing phases real work.
+
+### stop-drift's plan-tag match is phase-anchored
+- The check had two clauses and the second carried no phase at all: a bare
+  `-{NN})`. Any earlier phase's commit sitting in `git log -30` therefore
+  matched a freshly-planned later phase, which reported its PLAN-01/02/03 as
+  drifting purely because those plan numbers had been used before. Measured
+  on a live repo at phase 02 with nothing executed: 5 commits matched
+  `-01)`, 4 matched `-02)`, 4 matched `-03)`, and PLAN-04 did not fire at
+  all because no `-04)` existed anywhere — that asymmetry is the signature.
+- Both clauses now carry the phase and close the paren: `({slug}-{NN})` or
+  `({phaseNum}-{NN})` (a8e7473).
+- This was worse than a stray warning. The obvious way to satisfy the false
+  positive is to write the named SUMMARY files, and completion state is
+  derived from SUMMARY existence — so doing that silently marks unexecuted
+  plans complete and `/potion:execute` skips them. A cosmetic nudge could
+  cost a phase its first three waves.
+
+### Workers and verifiers may Write their protocol artifacts
+- Claude Code's built-in subagent guidance refuses `Write` on `.md` files it
+  reads as "reports". That catches `SUMMARY-{NN}.md` and `VERIFICATION.md`,
+  which are not reports: their existence on disk is what marks a plan
+  complete and what the orchestrator and `/potion:verify` read to compute a
+  verdict. It is not a hook or a permission rule — no prompt is ever raised,
+  the subagent simply declines — so no allow-list entry fixes it.
+- Both agent definitions now state that these artifacts are explicitly
+  required deliverables the standing guidance does not cover, and both
+  forbid the shell-heredoc workaround: a file written through `sh` is
+  invisible to the harness's file tracking and silently bypasses the secret
+  scrubber (6c4906e).
+- Observed 2026-08-04 on a six-worker wave: four workers routed around the
+  refusal with heredocs, and two returned blocked with the SUMMARY content
+  inline for the orchestrator to write by hand.
+
 ## 1.15.0 — 2026-07-21
 
 The verify-burrs release: cycle 3 closes. Evidence files can no longer bloat
