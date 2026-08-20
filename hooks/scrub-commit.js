@@ -74,12 +74,25 @@ function diffChunks(diffText) {
   return chunks;
 }
 
+// Only ADDED lines can introduce a secret. A diff that REMOVES a hardcoded
+// value necessarily carries that value on its `-` line, so scanning whole
+// hunks makes cleaning a leak impossible — the fix blocks itself, and the
+// only way out is the bypass this hook exists to prevent. Scan the `+` side
+// only, dropping the `+++` header (which is a filename, never content).
+function addedLines(text) {
+  return text
+    .split("\n")
+    .filter((l) => l.startsWith("+") && !l.startsWith("+++"))
+    .join("\n");
+}
+
 function scanChunk(chunk) {
   if (/(^|\/)verify-env\.local$/.test(chunk.file)) {
     block("verify-env.local (file must never be committed)", chunk.file);
   }
+  const added = addedLines(chunk.text);
   for (const p of PATTERNS) {
-    if (p.re.test(chunk.text)) block(p.name, chunk.file);
+    if (p.re.test(added)) block(p.name, chunk.file);
   }
 }
 
@@ -124,8 +137,13 @@ function main() {
   if (declared.length > 0) {
     for (const args of ["diff --cached", "diff HEAD"]) {
       for (const chunk of diffChunks(git(args, cwd))) {
+        // Added lines only, same rule as scanChunk: a diff REMOVING a leaked
+        // value carries it on its `-` line, and blocking that would block
+        // the cleanup itself (bit 2026-08-17: un-hardcoding a fixture
+        // password in a comment was unremovable).
+        const chunkAdded = addedLines(chunk.text);
         for (const s of declared) {
-          if (chunk.text.includes(s.value)) {
+          if (chunkAdded.includes(s.value)) {
             block(
               `declared secret ${s.key} (value from verify-env.local)`,
               chunk.file
@@ -143,14 +161,41 @@ function main() {
     const leaked = findLeakedFiles(cwd, declared);
     if (leaked.length > 0) {
       const touched = new Set();
+      const staged = new Set();
       for (const args of ["diff --cached --name-only", "diff HEAD --name-only"]) {
         for (const line of git(args, cwd).split("\n")) {
           const t = line.trim();
-          if (t) touched.add(t);
+          if (!t) continue;
+          touched.add(t);
+          if (args.includes("--cached")) staged.add(t);
         }
       }
       for (const l of leaked) {
-        if (touched.has(l.file)) {
+        if (!touched.has(l.file)) continue;
+        // The commit touching a leaked file may BE the cleanup — same
+        // self-block rule as the added-lines scan above (bit 2026-08-17:
+        // the commit deleting a hardcoded password was quarantined by the
+        // HEAD blob it was deleting). Block only if the INCOMING content
+        // still carries the value: the staged copy when the file is staged,
+        // else the working tree (in the `git add X && git commit` compound
+        // the index still mirrors HEAD's leaky blob when this hook fires —
+        // the add has not run yet). Unreadable content blocks conservatively.
+        let incoming = staged.has(l.file)
+          ? git(`show :"${l.file}"`, cwd)
+          : null;
+        if (!incoming) {
+          try {
+            incoming = fs.readFileSync(path.join(cwd, l.file), "utf8");
+          } catch {
+            incoming = null;
+          }
+        }
+        const stillLeaks =
+          incoming === null ||
+          declared.some(
+            (s) => l.keys.includes(s.key) && incoming.includes(s.value)
+          );
+        if (stillLeaks) {
           block(
             `standing leak — ${l.file} contains declared secret ` +
               `${l.keys.join(", ")} (retro-scan; clean the file before ` +
