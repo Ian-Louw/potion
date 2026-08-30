@@ -4,6 +4,34 @@
 > dogfood). Commit hashes and evidence paths cited below refer to that repo's
 > history; this public repo carries one clean commit per release.
 
+## 1.16.0 — 2026-08-30
+
+Doc consolidation becomes a first-class lane. Distilled from a 13-doc manual
+consolidation session on a field repo: closed work stays verbose,
+open lists fragment, and "current" recipes quietly become the wrong way to do
+things — with no mechanism noticing.
+
+### /potion:consolidate + .potion/docs.json + staleness nag
+- New skill `skills/consolidate/SKILL.md`: ground-truth verification before
+  any rewrite (run cited ratchets, grep the claims), classify every item
+  (done → archive one-liner · open → the ONE open_list file · superseded →
+  correct or tombstone · lesson → ledger), rescue-before-delete, history
+  hash in every rewritten header, per-file commits. Unverifiable human-owned
+  items stay open — status is never invented (Lint's truth-side gate).
+- New opt-in manifest `.potion/docs.json` (templates/docs.json): per doc a
+  path, one-line role contract, optional open_list / cap_lines, stale_days,
+  last_consolidated. Humans pick roles and caps; the skill bumps dates.
+- `hooks/session-start.js` gains a notice-only `POTION DOC STALENESS` leg:
+  flags entries past stale_days, past cap_lines, or missing on disk
+  (manifest rot). Warn-posture, silently skipped without a manifest — the
+  established scan-a-date-at-SessionStart idiom, no scheduler introduced.
+- `/potion:update` gains **M7 docs manifest** — an OFFER like M6 (candidates
+  proposed from root *.md + .planning/*.md, human confirms roles/caps; never
+  written unilaterally). Not mirrored in the grammar-drift scan, same as the
+  other offer.
+- CORE.md documents the grammar and the doctrine: history lives in git
+  hashes, open work lives in one file, rescue before delete.
+
 ## 1.15.1 — 2026-08-07
 
 Two field-observed defects in the execute loop. No grammar change, no new

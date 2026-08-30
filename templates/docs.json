@@ -1,0 +1,20 @@
+{
+  "_comment": "Consolidation-managed docs (/potion:consolidate + the session-start staleness nag). Per entry: path (repo-relative) · role (one-line contract for what the file is FOR — the rewrite must land inside it) · open_list (optional: the ONE file open items belong in; entries here hold pointers only) · cap_lines (optional growth trigger) · stale_days (age trigger, default 30) · last_consolidated (YYYY-MM-DD, bumped by the skill). Humans pick roles and caps; the skill only bumps dates.",
+  "docs": [
+    {
+      "path": "BUGS.md",
+      "role": "closed tester log + root causes + standing product decisions",
+      "open_list": "TASKS.md",
+      "cap_lines": 350,
+      "stale_days": 30,
+      "last_consolidated": "2026-01-01"
+    },
+    {
+      "path": "TASKS.md",
+      "role": "the ONE open-work list",
+      "cap_lines": 200,
+      "stale_days": 30,
+      "last_consolidated": "2026-01-01"
+    }
+  ]
+}

@@ -365,6 +365,60 @@ try {
   /* warn-posture: never block a session over the escalation scan */
 }
 
+// Doc-staleness scan: consolidation-managed docs declared in
+// .potion/docs.json get NOTICED when they age past stale_days or grow past
+// cap_lines. Notice-only — /potion:consolidate is the only mutating lane.
+// Opt-in: repos without a manifest are silently skipped (M7 offers one).
+// Warn-posture: any throw is swallowed — a session is never blocked by
+// this leg.
+try {
+  const manifestRaw = readIfExists(path.join(potionDir, "docs.json"), 65536);
+  if (manifestRaw) {
+    const manifest = JSON.parse(manifestRaw);
+    const docs = Array.isArray(manifest.docs) ? manifest.docs : [];
+    const today = Date.now();
+    const DAY_MS = 86400000;
+    const stale = [];
+    for (const d of docs) {
+      if (!d || typeof d.path !== "string") continue;
+      const abs = path.join(root, d.path);
+      if (!fs.existsSync(abs)) {
+        stale.push(`${d.path}: listed in .potion/docs.json but missing on disk (manifest rot)`);
+        continue;
+      }
+      const reasons = [];
+      const staleDays = Number.isFinite(d.stale_days) ? d.stale_days : 30;
+      const lastMs = Date.parse(d.last_consolidated);
+      if (!Number.isFinite(lastMs)) {
+        reasons.push("no valid last_consolidated date");
+      } else {
+        const age = Math.floor((today - lastMs) / DAY_MS);
+        if (age > staleDays) reasons.push(`${age} days since consolidation (limit ${staleDays})`);
+      }
+      if (Number.isFinite(d.cap_lines)) {
+        // Whole-file read is fine here: managed docs are digests by contract.
+        const text = readIfExists(abs, 1048576);
+        if (text) {
+          // Count like wc -l (stop-drift's convention): a trailing newline
+          // does not start a phantom extra line.
+          const lines = text.split("\n").length - (text.endsWith("\n") ? 1 : 0);
+          if (lines > d.cap_lines) reasons.push(`${lines} lines (cap ${d.cap_lines})`);
+        }
+      }
+      if (reasons.length) stale.push(`${d.path}: ${reasons.join(" and ")}`);
+    }
+    if (stale.length) {
+      parts.push("\n## POTION DOC STALENESS — consolidation-managed docs have drifted");
+      for (const s of stale) parts.push(`- ${s}`);
+      parts.push(
+        "Run /potion:consolidate — nag only, nothing has been changed automatically."
+      );
+    }
+  }
+} catch {
+  /* warn-posture: never block a session over the doc-staleness scan */
+}
+
 // Grammar-drift scan (phase 20): repos initialized under older .potion
 // grammar get NOTICED, not silently left behind. Cheap fs/string checks
 // only — no git calls, no template reads, no home-dir reads. Notice-only:

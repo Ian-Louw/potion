@@ -59,6 +59,15 @@ migrated, not the plugin repo).
    `templates/escalations.md` as ready-to-paste. NEVER write the file —
    only a human edits it. Declined or deferred → note in the report,
    nothing else.
+7. **M7 docs manifest** — OFFER, not a transform. Detect:
+   `test -f .potion/docs.json` fails. One question: does this repo want
+   consolidation-managed docs (staleness nag at session start +
+   /potion:consolidate)? If yes: propose a candidate list by scanning root
+   `*.md` and `.planning/*.md` for living docs (skip generated files and
+   READMEs), suggest a one-line role and caps for each, and write the file
+   ONLY from the human's confirmed choices — roles and caps are theirs, per
+   `${CLAUDE_PLUGIN_ROOT}/templates/docs.json`. Declined or deferred → note
+   in the report, nothing else.
 
 CI adoption is deliberately not in the v1 list — init covers new repos.
 
@@ -94,7 +103,7 @@ CI adoption is deliberately not in the v1 list — init covers new repos.
    the section is empty, delete the `## Parked` header + its comment.
    Commit once: `chore(potion): update — parked triage`. Done when: no
    `## Parked` remains and the triage commit exists.
-4. **Escalations offer (M6) + exit report.** Run the M6 offer, then report:
+4. **Offers (M6, M7) + exit report.** Run the M6 and M7 offers, then report:
    applied vs skipped table, any surfaced refusals, verify-env status,
    triage tally. Update STATE.md's Last activity line as part of whichever
    commit lands last. Done when: the report is on screen.

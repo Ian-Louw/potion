@@ -160,6 +160,7 @@ elsewhere = DRIFT (re-pin via /potion:learn), absent = REGRESSION.
 .potion/
 ├── PROJECT.md            # goals, Key Decisions table, Out of Scope (with why)
 ├── STATE.md              # <60-line digest — see templates/STATE.md
+├── docs.json             # optional: consolidation-managed docs — see templates/docs.json
 ├── learnings.jsonl       # append-only; newest entry wins per key
 ├── continue-here.md      # transient pause file; delete after resume
 ├── verify-env.md         # runtime session recipe OR `none-needed: <why>` — never absent
@@ -207,6 +208,17 @@ from Fog/Parked in the same edit — never both.
 Any skill whose exit updates STATE.md's Position also rewrites Session
 continuity to match — or sets it to 'in flow — derive from Position'.
 /potion:pause remains the only writer of exact mid-task positions.
+
+**Consolidation-managed docs (optional):** a repo may declare living docs in
+`.potion/docs.json` (grammar in templates/docs.json — path, one-line role,
+optional open_list / cap_lines, stale_days, last_consolidated). Session-start
+nags when an entry ages past stale_days or grows past cap_lines;
+/potion:consolidate is the only mutating lane. Doctrine: history lives in git
+hashes (every rewritten header names the commit holding the verbose version),
+open work lives in exactly ONE file (the open_list; elsewhere = pointers),
+rescue before delete, and unverifiable human-owned items stay open — status
+is never invented. Caps for managed docs live in the manifest, unlike
+STATE.md's hardcoded 60-line stop-drift cap.
 
 ## Learnings
 
