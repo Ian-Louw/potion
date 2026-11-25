@@ -14,12 +14,14 @@
 //
 // A unit still to run that cannot be read is MALFORMED and fails the check:
 // a frontmatter that never closes (or does not open the file), a missing or
-// non-positive-integer wave, or a `plan:` that disagrees with the file name.
-// A unit with no readable wave is left out of waves and exclusivity.
+// non-positive-integer wave, a `plan:` that disagrees with the file name, two
+// files claiming one number (PLAN-01 and RUNBOOK-01, or PLAN-1 and PLAN-01),
+// or a PLAN-/RUNBOOK- file whose name is not <NN>.md (PLAN-04b.md would never
+// run). A unit with no readable wave is left out of waves and exclusivity.
 //
 // files_modified entries are compared after normalisation (backslashes to
-// `/`, leading `./` stripped, `//` collapsed, trailing `/` stripped, case
-// ignored); a directory entry overlaps every path under it.
+// `/`, `.` segments dropped, `x/..` resolved, `//` collapsed, trailing `/`
+// stripped, case ignored); a directory entry overlaps every path under it.
 //
 // Output lines:
 //   WAVE <n> width=<count> plans=<NN,NN,…>
@@ -184,11 +186,14 @@ function uniq(list) {
 
 // The form two files_modified entries are compared in. '' is the repo root.
 function normPath(s) {
-  let t = s.trim().replace(/\\/g, '/').replace(/\/{2,}/g, '/');
-  while (t.slice(0, 2) === './') t = t.slice(2);
-  if (t === '.') t = '';
-  if (t.length > 1) t = t.replace(/\/$/, '');
-  return t.toLowerCase();
+  const t = s.trim().replace(/\\/g, '/');
+  const segs = [];
+  t.split('/').forEach((p) => {
+    if (p === '' || p === '.') return;
+    if (p === '..' && segs.length && segs[segs.length - 1] !== '..') segs.pop();
+    else segs.push(p);
+  });
+  return ((t[0] === '/' ? '/' : '') + segs.join('/')).toLowerCase();
 }
 
 // Same path, or one is a directory holding the other (the prefix must end at
@@ -221,9 +226,13 @@ function main() {
   });
 
   const units = [];
+  const strays = [];
   for (const n of names) {
     const m = /^(PLAN|RUNBOOK)-(\d+)\.md$/.exec(n);
-    if (!m) continue;
+    if (!m) {
+      if (/^(PLAN|RUNBOOK)-.*\.md$/.test(n)) strays.push(n);
+      continue;
+    }
     let text;
     try {
       text = fs.readFileSync(path.join(dir, n), 'utf8');
@@ -266,7 +275,8 @@ function main() {
 
   const byId = {};
   units.forEach((u) => {
-    byId[u.id] = u;
+    if (byId[u.id]) u.reasons.push('number ' + u.id + ' is also claimed by ' + byId[u.id].file);
+    else byId[u.id] = u;
   });
 
   const out = [];
@@ -351,6 +361,10 @@ function main() {
       out.push('MALFORMED ' + u.file + ' — ' + r);
       malformed++;
     });
+  });
+  strays.forEach((n) => {
+    out.push('MALFORMED ' + n + ' — file name is not ' + n.split('-')[0] + '-<NN>.md, it would never run');
+    malformed++;
   });
 
   const serial = waveNums.filter((w) => waves[w].length === 1).length;

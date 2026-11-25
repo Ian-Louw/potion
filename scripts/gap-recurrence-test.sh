@@ -296,6 +296,52 @@ wf 1 "gaps:\n  - truth: >-\n      Alpha works\n      end to end\n    status: \"F
 wf 2 "gaps:\n- truth: |\n    Alpha works\n    end to end\n  status: FAILED\n  reason: \"truth: not this\"\n- truth: >\n    Gamma has\n\n    a test\n  status: FAILED\naccepted: []\n"
 shape "block-scalar-truth"
 
+# a plain and a quoted truth wrapped onto more-indented lines
+mkfix
+wf 1 "gaps:
+  - truth: Alpha works
+      end to end
+    status: FAILED
+  - truth: \"$B\"
+"
+wf 2 "gaps:
+  - truth: \"Alpha works
+      end to end\"
+    status: FAILED
+    reason: \"truth: not this\"
+  - truth: Gamma has
+      a test
+    status: FAILED
+accepted: []
+"
+shape "wrapped-truth"
+
+# the whole list on one line, as flow maps
+mkfix
+wf 1 "gaps: [{truth: \"$A\", status: FAILED}, {truth: \"$B\"}]
+"
+wf 2 "gaps: [{truth: \"$A\", status: FAILED, reason: \"truth: not this\"}, {status: FAILED, truth: $C}]
+accepted: []
+"
+shape "inline-gaps-list"
+
+# a truth key nested deeper inside a gap item is not a gap
+mkfix
+wf 1 "gaps:
+  - truth: \"$A\"
+    detail:
+      truth: \"$B\"
+"
+wf 2 "gaps:
+  - truth: \"$A\"
+    detail:
+      truth: \"$B\"
+      also:
+        - truth: not this
+  - truth: \"$C\"
+"
+shape "nested-truth-key-ignored"
+
 for t in $TMPS; do rm -rf "$t"; done
 
 echo "$PASSES PASS, $FAILS FAIL"

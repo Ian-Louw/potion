@@ -42,7 +42,11 @@ at most once.
 3. **Spec merge.** `sh ${CLAUDE_PLUGIN_ROOT}/scripts/merge-specs.sh
    .potion/phases/{NN-slug}` — applies the phase's `<spec_deltas>` to
    .potion/specs/. Nonzero exit → STOP and show the CONFLICT/MALFORMED output;
-   the human edits deltas or specs and re-runs — never hand-merge. Applied ops →
+   the human edits deltas or specs and re-runs — never hand-merge. The one
+   exception: a CONFLICT only because a later plan (a gap closure) re-touches
+   a requirement an earlier plan of this phase touched → run the script once
+   per plan in plan order, each `PLAN-NN.md` copied alone into a temp
+   directory passed as the phase dir, and say so in the commit. Applied ops →
    commit `docs(potion): phase NN spec merge`. No deltas is a clean no-op.
    Merging another phase's deltas here requires the explicit cross-note in
    both phases' records (independent-ship rule).

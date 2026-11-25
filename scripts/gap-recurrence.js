@@ -9,9 +9,11 @@
 // file whose `cycle:` is exactly current-1, and compares the gap truths.
 //
 // A gap item may be written at any indentation (column 0 included), with its
-// truth plain, single- or double-quoted, as a block scalar (`truth: >-` or
-// `|`, the more-indented lines joined into one string), or as a one-line
-// flow map (`- {truth: "…", status: …}`).
+// truth plain, single- or double-quoted (wrapped onto more-indented lines or
+// not), as a block scalar (`truth: >-` or `|`, the more-indented lines joined
+// into one string), or as a flow map (`- {truth: "…", status: …}`, also
+// inside a one-line `gaps: [{…}, {…}]`). Only a `truth:` that is a direct
+// key of a gap item counts — one nested deeper inside an item is not a gap.
 //
 // Output:
 //   CYCLE <n>
@@ -121,6 +123,31 @@ function flowTruth(text) {
   return '';
 }
 
+// Every flow map's truth in a one-line `[{…}, {…}]` list.
+function inlineTruths(text) {
+  const out = [];
+  let quote = '';
+  let depth = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quote) {
+      if (c === '\\' && quote === '"') i++;
+      else if (c === quote) quote = '';
+    } else if (c === '"' || c === "'") {
+      quote = c;
+    } else if (c === '{') {
+      if (depth === 0) {
+        const t = flowTruth(text.slice(i + 1));
+        if (t) out.push(t);
+      }
+      depth++;
+    } else if (c === '}') {
+      depth--;
+    }
+  }
+  return out;
+}
+
 function indentOf(line) {
   return /^\s*/.exec(line)[0].length;
 }
@@ -132,12 +159,16 @@ function parse(text) {
   let verdict = '';
   const gaps = [];
   let inGaps = false;
+  let itemCol = -1;
   for (let i = 0; i < fm.length; i++) {
     const line = fm[i];
     if (line.trim() === '' || /^\s*#/.test(line)) continue;
     if (/^[^\s-]/.test(line)) {
       // a top-level key ends any list we were in
-      inGaps = /^gaps\s*:/.test(line);
+      const g = /^gaps\s*:(.*)$/.exec(line);
+      inGaps = g !== null;
+      itemCol = -1;
+      if (g && g[1].trim()[0] === '[') inlineTruths(g[1]).forEach((t) => gaps.push(t));
       const c = /^cycle:\s*["']?(\d+)/.exec(line);
       if (c) cycle = parseInt(c[1], 10);
       const v = /^verdict:(.*)$/.exec(line);
@@ -148,6 +179,9 @@ function parse(text) {
     // a list item or a key inside one, at any indentation including column 0
     const m = /^(\s*)(-\s+)?(.*)$/.exec(line);
     const rest = m[3];
+    const col = m[1].length + (m[2] ? m[2].length : 0);
+    if (m[2] && (itemCol === -1 || m[1].length < itemCol)) itemCol = col;
+    if (col !== itemCol) continue; // nested deeper than a gap item's own keys
     let truth = '';
     if (m[2] && rest[0] === '{') {
       truth = flowTruth(rest.slice(1));
@@ -164,7 +198,12 @@ function parse(text) {
         }
         truth = parts.join(' ');
       } else {
-        truth = scalar(t[1]);
+        // a plain or quoted value may wrap onto more-indented lines
+        let raw = t[1];
+        while (i + 1 < fm.length && fm[i + 1].trim() !== '' && indentOf(fm[i + 1]) > col) {
+          raw += ' ' + fm[++i].trim();
+        }
+        truth = scalar(raw);
       }
     }
     if (truth) gaps.push(truth);

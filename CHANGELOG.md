@@ -4,6 +4,26 @@
 > dogfood). Commit hashes and evidence paths cited below refer to that repo's
 > history; this public repo carries one clean commit per release.
 
+## 1.19.1 — 2026-11-25
+
+Closes what the 1.19.0 blind audit left open in the two new checkers.
+
+### Fixed
+- `scripts/wave-check.js` reports as MALFORMED two files that claim one
+  number (`PLAN-01.md` and `RUNBOOK-01.md`) and a plan file whose name
+  execute would never pick up (`PLAN-04b.md`); both used to pass as ok.
+- `scripts/wave-check.js` treats `src/./a.js` and `src/lib/../a.js` as
+  `src/a.js` when comparing `files_modified`.
+- `scripts/gap-recurrence.js` reads a gap truth wrapped onto following
+  lines in full, reads a one-line `gaps: [{…}, {…}]` list (it used to read
+  none), and no longer counts a `truth:` key nested deeper inside a gap.
+
+### Changed
+- `skills/ship` says what to do when the spec merge reports a conflict only
+  because a later plan in the phase re-touches a requirement an earlier one
+  touched: apply the plans one at a time, in plan order. The script itself
+  is unchanged and still refuses the combined run.
+
 ## 1.19.0 — 2026-11-25
 
 Wider, safer waves and a second opinion where loops go wrong. Field

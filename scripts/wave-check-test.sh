@@ -445,6 +445,38 @@ pathpair "q-file-under-a-directory-entry" 'src/a.js' 'src' conflict
 pathpair "q-prefix-must-end-at-a-separator" 'src/ab.js' 'src/a.js' none
 pathpair "q-directory-name-prefix-is-not-a-parent" 'src' 'src-old/a.js' none
 
+pathpair "q-dot-segment-same-file" 'src/./a.js' 'src/a.js' conflict
+pathpair "q-parent-segment-same-file" 'src/lib/../a.js' 'src/a.js' conflict
+pathpair "q-parent-segment-other-file" 'src/lib/../b.js' 'src/a.js' none
+
+# ---------------------------------- (q2) names the checker used to skip
+
+# two files claiming one number
+mkfix
+mkplan PLAN-01.md 01 1 '' 'a.js' ''
+mkplan RUNBOOK-01.md 01 2 '' 'b.js' ''
+run
+if [ "$rc" -eq 1 ] &&
+  has "$out" "MALFORMED RUNBOOK-01.md — number 01 is also claimed by PLAN-01.md" &&
+  has "$out" "malformed=1" && ! has "$out" "RESULT ok"; then
+  ok "q2-duplicate-number"
+else
+  bad "q2-duplicate-number" "rc=$rc out=$out"
+fi
+
+# a plan file whose name execute would never pick up
+mkfix
+mkplan PLAN-01.md 01 1 '' 'a.js' ''
+mkplan PLAN-04b.md 04 1 '' 'b.js' ''
+run
+if [ "$rc" -eq 1 ] &&
+  has "$out" "MALFORMED PLAN-04b.md — file name is not PLAN-<NN>.md, it would never run" &&
+  has "$out" "WAVE 1 width=1 plans=01" && ! has "$out" "RESULT ok"; then
+  ok "q2-stray-plan-name"
+else
+  bad "q2-stray-plan-name" "rc=$rc out=$out"
+fi
+
 # -------------------------------------------------- (r) CRLF line endings
 
 mkfix
