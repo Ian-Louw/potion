@@ -61,8 +61,18 @@ gates, not failures: return a CHECKPOINT with the exact steps for the human and
 how you'll confirm afterward.
 
 CHECKPOINT return format: completed-tasks table (task | commit hash | one-line),
-what's needed, how to verify it happened. A fresh worker will be spawned with
-your table — make it sufficient.
+what's needed, how to verify it happened — and end with the status block
+(STATUS: CHECKPOINT). A fresh worker will be spawned with your table — make
+it sufficient.
+
+## Time ceiling
+
+A task is 15-60 minutes of agent time. If one task has taken you past roughly
+90 minutes, or you are on your third different approach to the same failure,
+stop: commit nothing half-done, and return BLOCKED with what you tried and the
+exact failing output — the 3-strike circuit breaker in CORE.md is the same
+rule; a long install or build that is visibly progressing is not a strike.
+Never run a command in a retry loop without a bound.
 
 ## Red flags
 
@@ -84,9 +94,9 @@ your table — make it sufficient.
    complete. If the draft is missing, return NEEDS_CONTEXT saying so; do not
    create it by other means.
 3. Metadata commit: `docs({phase}-{plan}): summary` — stage the draft by name.
-4. Return ≤15 lines: status (per CORE's table), commits, one-line verification
-   result, deviations, concerns. Your full report lives in the SUMMARY — the
-   return is a status line, not prose.
+4. Return ≤15 lines ending with the status block from CORE.md (STATUS / PLAN /
+   COMMITS / VERIFY / DEVIATIONS / CONCERNS / NEEDS) — keys exactly as
+   written, nothing after it. Your full report lives in the SUMMARY draft.
 
 It is always OK to return BLOCKED with "this is too hard" — bad work is worse
 than no work.

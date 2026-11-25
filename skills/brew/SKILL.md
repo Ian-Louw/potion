@@ -74,10 +74,31 @@ the loop must survive your own context being compacted mid-run.
   cross-check) and write those sections of VERIFICATION.md from the template. Do not run
   step 2, do not set the verdict, do not spawn agents. Return ≤15 lines."; (2)
   potion:potion-verifier per verify step 2, told to return its ladder as text (it must not
-  write VERIFICATION.md while agent 1 is writing it). The main session then writes the ladder
+  write VERIFICATION.md while agent 1 is writing it; its ≤15-line limit does not apply to that
+  ladder; the status block still ends the return). The main session then writes the ladder
   into VERIFICATION.md, sets the verdict per verify step 4 and the verdict contract, harvests
   learnings, regenerates the evidence index. It judges only from those two outputs.
-- **gaps**: verdict gaps and cycle < 3 → plan (gaps mode) → execute → verify again. Cycle 3 → escalate (human gate).
+- **gaps**: verdict gaps and cycle < 3 → first run `node ${CLAUDE_PLUGIN_ROOT}/scripts/gap-recurrence.js {phase dir}`.
+  The script matches a gap's text exactly (case, spacing and final punctuation aside): also read
+  both cycles' gaps yourself — a reworded gap about the same truth is a recurrence too.
+  A RECURRING gap, or a plan that was respawned after a stall this run, means the last fix did
+  not work: before planning again, consult the advisor (or run /potion:investigate on that gap
+  when there is none) and plan from the root cause it finds — never re-issue the same fix.
+  Then plan (gaps mode) → execute → verify again. Cycle 3 → escalate (human gate).
+
+## Advisor (when the session has one)
+
+If you have an `advisor` tool, call it at these three points (and at the stuck-loop trigger in the
+gaps stage); if you do not, skip them silently — never ask the human to enable it mid-run and
+never treat its absence as a gate.
+1. Plan accepted, before the first wave: give it the phase goal, the locked Decisions and the plan
+   table; ask what is missing or risky. A blocker it finds goes back to planning once; advice is not a gate.
+2. Before a cycle-3 escalation: give it the three cycles' gaps and your theory; put its view
+   beside yours in the escalation.
+3. Before recording the verdict: give it the truths table with the runtime evidence paths; ask what
+   a skeptic would still doubt. A doubt it raises is checked or recorded — never waved through,
+   never allowed to flip a verdict without evidence.
+The advisor advises; the verifiers verify; the human decides gates.
 
 ## Human gates — the ONLY reasons to stop mid-loop
 
@@ -117,6 +138,7 @@ scheduled wakeups, set one long fallback (~20 min) that does only the watchdog d
 | "Cycle 3 failed but I can see the fix" | That's what cycle-3 escalation is FOR — show the human your theory. |
 | "It ran unattended this far, so I can skip this checkpoint" | Autonomy between gates, never through them. Stop. |
 | "I'll verify it myself, I saw the workers succeed" | You are anchored. Fresh agents verify; you only combine their outputs. |
+| "The advisor agrees, so it's verified" | Agreement is not evidence. The truths table decides. |
 
 ## Exit
 

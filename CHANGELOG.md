@@ -4,6 +4,69 @@
 > dogfood). Commit hashes and evidence paths cited below refer to that repo's
 > history; this public repo carries one clean commit per release.
 
+## 1.19.0 — 2026-11-25
+
+Wider, safer waves and a second opinion where loops go wrong. Field
+evidence: 78% of worker spawns were serial with nothing reporting it, one
+worker ran 523 minutes, an API overload killed a worker twice and looked
+like a stall, and worktrees did not isolate a shared database, port or
+device in four repos.
+
+### Waves: declared resources, checked by a script
+- `templates/PLAN.md` gains `resources:` — shared things a worktree does not
+  isolate (`port:3000`, `db:dev`, `device:emulator`, …). Same-wave plans may
+  share neither a file nor a resource.
+- New `scripts/wave-check.js` (read-only): reports same-wave file and
+  resource conflicts, a unit scheduled at or before an unfinished dependency,
+  a dependency on a missing plan, and any plan it cannot read (unclosed
+  frontmatter, missing or non-integer wave, file name and plan id
+  disagreeing) — and exits non-zero. Paths are normalised (`./`, `//`,
+  case, directory-vs-file). Completed units are history and never judged.
+  It prints each wave's width and a `SERIAL` hint when most waves have one
+  plan.
+- `/potion:plan` runs it in its self-check; `/potion:execute` runs it before
+  spawning and reports wave widths.
+
+### Execution resilience
+- **At most six workers live.** A wider wave spawns six and starts one more
+  each time a worker finishes.
+- **Overload is not a stall.** A worker that ended on an API overload or
+  rate-limit error is respawned after a pause, up to three times with the
+  wait doubling, without spending the plan's single stall-respawn.
+- **Time ceiling.** Workers return BLOCKED rather than grinding past ~90
+  minutes or a third approach on one task; the orchestrator treats 90 silent
+  minutes as a stall, stops the worker before any respawn, and never runs two
+  workers on one plan.
+- **Status block.** Workers and the verifier end every return with a
+  fixed-key block (`STATUS / PLAN / COMMITS / VERIFY / DEVIATIONS / CONCERNS
+  / NEEDS`); the orchestrator routes on `STATUS:` and never guesses from
+  prose. Grammar in `core/CORE.md`.
+- The harness's built-in agent worktree isolation was probed and **not**
+  adopted: it bases the agent on the default branch, so a worker would not
+  see its plan. Execute keeps `git worktree add` from current HEAD.
+
+### Advisor and the stuck-loop check
+- When the session has Claude Code's advisor enabled, brew consults it at
+  three points: after planning, before a cycle-3 escalation, and before
+  recording a verdict. Advice is never a gate and never flips a verdict
+  without evidence. Potion does not enable or configure the advisor; the
+  README says how you do.
+- New `scripts/gap-recurrence.js`: before a gap cycle, compares this cycle's
+  gaps with the previous cycle's committed ones. A recurring gap — or a plan
+  respawned after a stall — sends brew to the advisor (or
+  `/potion:investigate`) instead of re-issuing the same fix.
+
+### Tests
+- `scripts/wave-check-test.sh` (36 cases) and
+  `scripts/gap-recurrence-test.sh` (16 cases); eleven test scripts, 154
+  cases.
+
+### Not yet proven in use
+- The six-worker cap, the overload respawn, the time ceiling and the advisor
+  consults are instructions no verification run reached (the live wave had
+  two plans, nothing overloaded or stalled, no advisor was configured). They
+  are recorded as static-only with a field gate.
+
 ## 1.18.0 — 2026-11-25
 
 Auto mode. `/potion:brew` now carries a discussed phase from plan to a

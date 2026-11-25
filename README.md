@@ -138,6 +138,12 @@ back to the session on their own, so there is no typing "go". Every human gate
 still stops it and it never ships. Nothing in potion keeps a session running:
 if a run ever idles, `/potion:next` (or "go") picks up the next step.
 
+**Advisor (optional):** if you enable Claude Code's advisor — `/advisor opus`,
+or `"advisorModel"` in settings — brew asks it for a second opinion at three
+points: after planning, before a cycle-3 escalation, and before recording a
+verdict. Potion never turns it on or configures it, and works the same without
+it.
+
 ## 🔁 Closed loops by design
 
 Potion's phase cycle is a **closed loop** in the loop-engineering sense: a bounded

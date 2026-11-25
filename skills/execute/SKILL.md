@@ -13,8 +13,7 @@ Context budget: ~15% you, 100% fresh per worker.
 - Worker prompts are pointers: plan path + ≤10-line digest, never pasted
   plan text — the urge to add prompt context means the plan file is
   deficient; fix the plan on disk instead.
-- Worker returns are ≤15 lines: status, commits, one-line verification
-  result, deviations, concerns.
+- Worker returns are ≤15 lines ending in CORE's status block.
 - STATE.md position is updated after EVERY wave.
 - Quick mode ONLY when all four hold: ≤1 file, ≤~30 changed lines,
   reversible in one revert, unnamed in DISCUSSION.md Decisions/Deferred.
@@ -27,48 +26,52 @@ against this block; fix in place, or regenerate — at most once.
    phase (or the explicit argument if given). List `PLAN-*.md` AND
    `RUNBOOK-*.md` ONLY in that phase's directory. A unit with a matching
    `SUMMARY-*.md` (same NN) is already complete — skip it, either kind; a
-   `SUMMARY-NN.draft.md` never counts.
-   Completion state is derived from artifact existence, never from a status
-   field.
+   `SUMMARY-NN.draft.md` never counts. Completion state is derived from
+   artifact existence, never from a status field.
 
-2. **Wave up.** Group remaining plans by `wave` frontmatter. Within a wave, plans
-   own disjoint `files_modified` — spawn them as parallel agents in one message.
-   Between waves, block. No polling, no runtime dependency analysis: the planner
-   already did it. A wave with 2+ plans gets one isolated worktree + temp
-   branch per worker — from the repo root, per worker:
+2. **Wave up.** Group remaining plans by `wave` frontmatter. First run
+   `node ${CLAUDE_PLUGIN_ROOT}/scripts/wave-check.js {phase dir}`: any
+   CONFLICT/BADWAVE/MISSINGDEP/MALFORMED is a plan defect — stop and fix the
+   plans (or run /potion:plan), never spawn around it; note the WAVE widths
+   for the phase report. Within a wave, plans own disjoint `files_modified`
+   and `resources`. Spawn a wave's workers in one message, up to 6;
+   never more than 6 live — when a worker finishes and plans are still
+   waiting, start one more. Between waves, block. No polling, no
+   runtime dependency analysis: the planner already did it. A wave with 2+
+   plans gets one isolated worktree + temp branch per worker (repo root):
    `git worktree add ../{repo-dirname}-wt-{NN} -b potion/wave{W}-plan{NN}`
-   (branches from current HEAD; the sibling path keeps the repo clean, no
-   gitignore needed). A 1-plan wave runs in place in the main working tree.
-   Fallback if worktrees are unavailable: parallel workers share one index —
-   `index.lock` collisions are expected contention; workers retry, never
-   delete the lock. Done when every remaining plan sits in exactly one wave
-   and each worker of a 2+ wave has its own worktree and branch.
+   (branches from current HEAD; the sibling path needs no gitignore; the
+   harness's built-in agent isolation is not used — it bases on the default
+   branch, so a worker would not see its plan). A 1-plan wave runs in place
+   in the main working tree. Without worktrees, parallel workers share one
+   index — `index.lock` collisions are expected contention; workers retry,
+   never delete the lock. Done when every remaining plan sits in exactly one
+   wave and each worker of a 2+ wave has its own worktree and branch.
 
 3. **Spawn workers.** For each plan:
    - Draft stub: copy `${CLAUDE_PLUGIN_ROOT}/templates/SUMMARY.md` to
      `SUMMARY-{NN}.draft.md` next to the plan the worker will read (the
      worktree copy when isolation is on), replacing `{NN}`. Leave it
-     uncommitted — the worker's metadata commit adds it. Skip if the draft
-     already exists (respawn).
+     uncommitted — the worker's metadata commit adds it. Skip if it exists.
    - Prompt = "First, read ${CLAUDE_PLUGIN_ROOT}/core/CORE.md (your contract)
      and ${CLAUDE_PLUGIN_ROOT}/agents/potion-worker.md (your role). Then read
      your plan at {absolute path to PLAN-NN.md} and execute it verbatim." +
      a ≤10-line digest: repo path (when isolation is on, this IS the worker's
      worktree path, and the plan path is the worktree's copy), current STATE
-     position, the draft path, any concerns
-     carried from prior plans + up to 3 learning keys relevant to the plan's
-     files (`{key}: {one-line insight}`) pulled from `.potion/learnings.jsonl`
-     — skip the line if none match. Pointer shape per the contract above.
-   - Done when each worker's ≤15-line return is routed and its draft is
-     accepted.
+     position, the draft path, any concerns carried from prior plans + up to
+     3 learning keys relevant to the plan's files (`{key}: {one-line insight}`)
+     pulled from `.potion/learnings.jsonl` — skip the line if none match.
+   - Done when each worker's return is routed and its draft is accepted.
 
-4. **Route returns** by status (see CORE.md table). On `CHECKPOINT` returns
-   (Rule 4 deviation or human-verify), present the worker's completed-tasks table,
-   collect the user's answer, then spawn a **fresh** worker whose prompt includes
-   that table — its first act is `git log --oneline -10` to verify those commits
-   exist. Fresh agents with explicit state beat resumed agents with stale
-   context. Done when every worker return is routed per the CORE.md table and
-   no CHECKPOINT is left unanswered.
+4. **Route returns** on the `STATUS:` line of the status block (CORE.md); a
+   return without one → ask that worker once for its block, then treat as
+   NEEDS_CONTEXT — but a block-less return ending in an overload/529/rate-limit
+   message is an infrastructure death (step 5), not a missing status block.
+   On `CHECKPOINT` (Rule 4 deviation or human-verify), present its
+   completed-tasks table, collect the user's answer, spawn a **fresh** worker
+   whose prompt includes that table — its first act is `git log --oneline -10`
+   to verify those commits exist. Fresh agents with explicit state beat stale
+   resumed ones. Done when every return is routed, no CHECKPOINT unanswered.
 
 ## Runbooks (human gates in the wave)
 
@@ -86,9 +89,15 @@ steps the human completed between sessions confirm mechanically.
    install), nudge it once with what you observe, and only if still silent
    spawn a fresh worker on the same plan — safe because of the idempotency
    check. One respawn per plan; a second stall → BLOCKED, escalate. Never two
-   live workers on one plan. Done when the wave has zero unaccounted-for
-   workers: every plan has a routed return, a live worker, or a BLOCKED
-   escalation.
+   live workers on one plan. A worker that ended on an API overload or
+   rate-limit error (return or transcript ends in an overloaded/529/rate-limit
+   message, with no status block) is an infrastructure death, not a stall:
+   wait ~2 minutes, respawn on the same plan (idempotent), up to 3 times with
+   the wait doubling — these do not use the one stall-respawn. Time ceiling:
+   90 minutes with no new commit and no return is a stall however busy the worker looks — stop
+   it first (never two live on one plan; if it cannot be stopped, do not respawn → BLOCKED), then
+   it takes the plan's one stall-respawn; a second → BLOCKED. Done when every
+   plan in the wave has a routed return, a live worker or a BLOCKED escalation.
 
 6. **After each wave:** in the main working tree, merge each worker branch
    SEQUENTIALLY — `git merge --no-ff potion/wave{W}-plan{NN}`, one at a time,
@@ -112,17 +121,15 @@ steps the human completed between sessions confirm mechanically.
 
 ## Small-task escape hatch (quick mode)
 
-Qualifying conditions: the four in the orchestration contract above — all
-must hold. Still mandatory: atomic commit, evidence gate
-before claiming done, one-line note in STATE.md.
+Qualifies only when all four contract conditions above hold. Still mandatory:
+atomic commit, evidence gate before claiming done, one-line note in STATE.md.
 Evidence files: before writing, run `git check-ignore -q <name>` from the
 host repo root — an ignored name (e.g. `*.log`) gets a non-ignored one
-(`.txt`); trim raw logs to the relevant window (the scrubber blocks
-.potion/ files over 256 KB). Quick tasks skip
-`<spec_deltas>` unless they change specced behavior — then write the delta and
-run `scripts/merge-specs.sh` in the same session. The ratchet: the third
-consecutive quick task on a project is a phase wearing a disguise — stop and
-run /potion:discuss.
+(`.txt`); trim raw logs to the relevant window (the scrubber blocks .potion/
+files over 256 KB). Quick tasks skip `<spec_deltas>` unless they change
+specced behavior — then write the delta and run `scripts/merge-specs.sh` in
+the same session. The ratchet: the third consecutive quick task on a project
+is a phase wearing a disguise — stop and run /potion:discuss.
 
 ## Red flags
 
@@ -134,10 +141,10 @@ run /potion:discuss.
 
 ## Exit
 
-Phase report: plans completed, deviations, concerns. Route every SUMMARY
-concern that no next plan consumes into STATE.md's ## Fog, one line each,
-tagged `from SUMMARY-NN`. Nothing evaporates. Next up: verification
-must not be anchored by what this session watched the workers claim — run
-`/potion:brew` (it verifies with fresh agents, no `/clear` needed), or
-`/clear` and then `/potion:verify`. Record the stage:
-`node ${CLAUDE_PLUGIN_ROOT}/scripts/metrics.js record --stage execute --workers {N} --waves {N} --max-wave-width {N} --respawns {N} --gate-stops {N}`.
+Phase report: plans completed, wave widths ("waves: 3+1+2"), deviations,
+concerns. Route every SUMMARY concern that no next plan consumes into
+STATE.md's ## Fog, one line each, tagged `from SUMMARY-NN`. Nothing
+evaporates. Next up: verification must not be anchored by what this session
+watched the workers claim — run `/potion:brew` (it verifies with fresh
+agents, no `/clear` needed), or `/clear` then `/potion:verify`. Record the stage:
+`node ${CLAUDE_PLUGIN_ROOT}/scripts/metrics.js record --stage execute --workers {N} --waves {N} --max-wave-width {N} --respawns {N} --overload-respawns {N} --gate-stops {N}`.

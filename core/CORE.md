@@ -43,6 +43,24 @@ Every unit of work ends in exactly one of:
 It is always OK to stop and say "this is too hard for me." Bad work is worse
 than no work. No one is penalized for escalating.
 
+### Status block
+
+Every worker and verifier return ENDS with this block, keys in this order:
+```
+STATUS: DONE | DONE_WITH_CONCERNS | CHECKPOINT | NEEDS_CONTEXT | BLOCKED
+PLAN: {NN}                      (verifier: PHASE: {NN-slug})
+COMMITS: {comma-separated short hashes, or none}
+VERIFY: {pass | fail | n/a} — {one line}
+DEVIATIONS: {count}
+CONCERNS: {count}
+NEEDS: {what the orchestrator or human must supply, or none}
+```
+One key per line, nothing after it. The orchestrator routes on `STATUS:` only;
+a return with no parseable `STATUS:` line is treated as NEEDS_CONTEXT ("return
+your status block") — never guessed from prose. A verifier uses `STATUS: DONE`
+when the audit completed (whatever it found) and, in place of `COMMITS:`, a
+line `TRUTHS: {static_only}/{failed}/{human_needed}`.
+
 ## The evidence gate
 
 Before claiming anything works:
@@ -170,7 +188,8 @@ elsewhere = DRIFT (re-pin via /potion:learn), absent = REGRESSION.
   orchestrator's prompt is a pointer plus a ≤10-line digest, never pasted plan
   text. The plan file itself must be self-contained (that burden sits with the
   planner, on disk, where it's reviewable). Workers write full reports to disk
-  and return ≤15 lines: status, commits, one-line test result, concerns.
+  and return ≤15 lines: status, commits, one-line test result, concerns —
+  the status block's 7 lines are part of the 15.
 - 2–3 tasks per plan. ~50% context target — if you plan for 80%, you've already
   scheduled 30% of the work for degradation mode.
 

@@ -67,7 +67,13 @@ requirements — the untouched tree is guarded elsewhere.
 Fill the Ladder and Truths (static column) sections of the phase's
 VERIFICATION.md (create it from `${CLAUDE_PLUGIN_ROOT}/templates/VERIFICATION.md`
 if absent — leave verdict/runtime fields for the orchestrator). Return ≤15
-lines: truths by status, artifact statuses, broken links found.
+lines: truths by status, artifact statuses, broken links found — ending with
+the status block from CORE.md (verifier form: STATUS / PHASE / TRUTHS / VERIFY
+/ DEVIATIONS / CONCERNS / NEEDS; DEVIATIONS is always 0). If your prompt tells
+you to return the ladder as text instead of writing VERIFICATION.md (brew
+does, because another agent is writing that file), do that — the prompt's
+instruction wins over the paragraph below and over the 15-line limit for the
+ladder itself; still end with the status block.
 
 **Use the `Write`/`Edit` tools for VERIFICATION.md.** It is an explicit,
 required deliverable of your role — the standing guidance against proactively

@@ -4,6 +4,7 @@ phase: "{NN-slug}"
 wave: 1                      # max(wave of dependencies) + 1; wave 1 = no deps
 depends_on: []               # plan numbers this plan needs completed first
 files_modified: []           # exclusive ownership — no other same-wave plan may touch these
+resources: []                # shared things a worktree does NOT isolate — e.g. port:3000, db:dev, device:emulator, account:stripe-test, service:supabase-local; no other same-wave plan may name the same one
 escalations: []              # optional — grant names from .potion/escalations.md this plan's tasks invoke; a name absent or expired there is a plan-time defect
 must_haves:
   truths:                    # 3-7 user-observable statements, true when done

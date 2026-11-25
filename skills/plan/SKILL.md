@@ -12,8 +12,8 @@ agents. A plan is a prompt, not a document.
 - The specificity test: could a different Claude instance execute this
   without asking a single question? Placeholders ("TBD", "appropriate
   error handling", "similar to task N") are plan failures.
-- Frontmatter: `wave = max(deps)+1`; `files_modified` exclusive across
-  same-wave plans; 2-3 tasks per plan.
+- Frontmatter: `wave` > every dependency's wave (`max(deps)+1` unless a later cycle); `files_modified` AND `resources` exclusive across same-wave
+  plans (a worktree isolates files, not a shared port, database or device); 2-3 tasks per plan.
 - Numbering: PLAN-NN and RUNBOOK-NN share one pool — the next number is
   one past the highest existing of either; never reuse a number.
 Before finishing, re-read each emitted plan against this block; fix in
@@ -109,16 +109,16 @@ Never start from "what tasks make sense?" Start from the phase goal and derive:
    typings and corrects them under Rule 1. An unlabeled wrong "decision" is
    how workers ship deprecated calls out of misplaced obedience.
 
-4. **Self-check (adversarial pass, max 3 iterations).** Re-read each plan as a
-   hostile reviewer:
+4. **Self-check (adversarial pass, max 3 iterations)** as a hostile reviewer:
    - Does every truth trace to at least one task? (Missing = blocker)
    - Does every artifact have a task that wires it? (Orphan = blocker)
-   - Any task missing files/action/verify/done? Any plan with 4+ tasks?
+   - Any task missing files/action/verify/done? Any plan with 4+ tasks? Then run
+     `node ${CLAUDE_PLUGIN_ROOT}/scripts/wave-check.js phases/{NN-slug}` — any CONFLICT/BADWAVE/MISSINGDEP/MALFORMED
+     line is a blocker; a SERIAL line means look again for plans that could share a wave.
    - Does anything contradict a locked Decision or touch a Deferred item?
    - Are names consistent across tasks? (`clearLayers()` in task 1 but
      `clearAllLayers()` in task 3 is a bug you're shipping.)
-   Fix findings surgically — surgeon, not architect. Done when a pass yields
-   zero findings; if issues survive 3 passes, show them to the user.
+   Fix surgically — surgeon, not architect. Done when a pass yields zero findings; issues surviving 3 passes go to the user.
 
 5. Update STATE.md. Done when `git log -1` shows `docs(potion): phase NN plans`.
 
