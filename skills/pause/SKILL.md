@@ -22,7 +22,7 @@ not by archaeology.
    they're the most expensive thing to rediscover.
 
    Fill `Status before pause` with STATE.md's current status (closed vocabulary:
-   planning | executing | verifying | blocked) — capture it now, before step 3
+   planning | executing | verifying | blocked) — capture it now, before step 4
    overwrites it with `paused`. Done when: `.potion/continue-here.md` exists
    with every template field filled — no `{placeholders}` remain.
 

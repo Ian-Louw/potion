@@ -85,16 +85,36 @@ Track every deviation as `[Rule N] description` for the SUMMARY.
 - Gap flywheel: max 3 verify→fix cycles per phase (cycle counter lives in
   VERIFICATION.md frontmatter), then escalate with what was tried.
 
+## Auto mode
+
+/potion:brew carries a discussed phase to a verification verdict in one
+invocation. Fresh-context stages replace /clear; background completions
+replace "go". Every human gate stops it; it never ships, discusses or pushes.
+Nothing in the plugin keeps a session running — a mechanism that did was
+built, failed three safety audits and proved unnecessary in live runs, so it
+was removed (Law 10).
+
 ## Enforcement hooks
 
-All three fail open on internal error — instrumentation never traps a session.
+Six hook events: SessionStart, PreToolUse, PermissionRequest, Stop,
+SubagentStop, PreCompact. All of them fail open on internal error —
+instrumentation never traps a session.
+- **Session start** (SessionStart) restores position from disk and surfaces
+  learnings and drift notices; silent outside a Potion project.
 - **Secret scrubber** (PreToolUse) BLOCKS `git commit` when `.potion/` content
   is secret-shaped or verify-env.local would be committed; no agent bypass —
   the override is the human committing manually.
+- **Escalation approver** (PermissionRequest) approves only an exact,
+  unexpired, human-granted entry in `.potion/escalations.md`; it never denies.
 - **Stop drift nudge** (Stop) is one-shot: it blocks a stop once with the
   exact bookkeeping defects; the second stop always passes.
 - **Compaction re-grounding** (SessionStart, compact) injects a mechanical
   mid-phase digest from disk — trust it over the compaction summary.
+- **Worker-finish guard** (SubagentStop) is one-shot: a worker stopping as
+  done while its SUMMARY draft still holds template placeholders is told so
+  itself, once, with the draft path.
+- **Pre-compact digest** (PreCompact) prints the disk-derived position before
+  compaction; it never blocks.
 
 ## The verification ladder (canonical)
 
@@ -165,6 +185,7 @@ elsewhere = DRIFT (re-pin via /potion:learn), absent = REGRESSION.
 ├── continue-here.md      # transient pause file; delete after resume
 ├── verify-env.md         # runtime session recipe OR `none-needed: <why>` — never absent
 ├── verify-env.local      # secret values for the recipe (gitignored)
+├── metrics.jsonl         # one line per stage, appended by execute/verify/brew
 ├── specs/                # current truth, one dir per capability
 │   └── {capability}/spec.md   # `### Requirement:` IDs + GIVEN/WHEN/THEN — mutated only by merge-specs.sh on ship, or a human
 └── phases/NN-slug/

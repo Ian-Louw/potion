@@ -136,7 +136,8 @@ run /potion:discuss.
 
 Phase report: plans completed, deviations, concerns. Route every SUMMARY
 concern that no next plan consumes into STATE.md's ## Fog, one line each,
-tagged `from SUMMARY-NN`. Nothing evaporates. Next up: `/potion:verify`
-— suggest `/clear` first: verification must not be anchored by what this
-session watched the workers claim. Record the stage:
+tagged `from SUMMARY-NN`. Nothing evaporates. Next up: verification
+must not be anchored by what this session watched the workers claim — run
+`/potion:brew` (it verifies with fresh agents, no `/clear` needed), or
+`/clear` and then `/potion:verify`. Record the stage:
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/metrics.js record --stage execute --workers {N} --waves {N} --max-wave-width {N} --respawns {N} --gate-stops {N}`.

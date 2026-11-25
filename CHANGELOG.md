@@ -4,6 +4,72 @@
 > dogfood). Commit hashes and evidence paths cited below refer to that repo's
 > history; this public repo carries one clean commit per release.
 
+## 1.18.0 — 2026-11-25
+
+Auto mode. `/potion:brew` now carries a discussed phase from plan to a
+verification verdict in one invocation, with no `/clear` between stages and
+no typing "go". Field evidence behind it: half of all typed potion commands
+followed a `/clear` the skills prescribed, one user message in five was a
+bare "go", and brew was 1% of loop invocations.
+
+### Brew is the fresh-context loop
+- **Planning runs in a subagent**; execute keeps the main session spawning
+  workers; **verification runs in two fresh agents told nothing about worker
+  returns** — a runtime verifier (deterministic checks and runtime evidence)
+  beside the blind static verifier. The main session only combines their
+  outputs and sets the verdict. No agent spawns another.
+- Each stage's agents run in the background and their completion re-invokes
+  the session, so the loop moves on its own. Three complete live runs took a
+  scratch phase from one prompt to a verified pass in 4–6 minutes.
+- **Permission preflight** before the first wave: production writes,
+  deploys, remote shells and security-weakening steps must already be a
+  RUNBOOK step or a registered escalation — otherwise it is a human gate now,
+  not a stall at hour two. Potion writes no allow rules and never suggests
+  bypass mode.
+- Every human gate still stops it — worker CHECKPOINT, batched human_needed,
+  an unpassed RUNBOOK, gap cycle 3, a Deferred or locked-Decision touch — and
+  it never ships, starts a discuss, or pushes.
+- `/potion:execute`'s exit now points at brew as the fresh-context verify
+  path instead of prescribing `/clear`.
+
+### /potion:next
+- New skill: derives the position from disk and runs the next stage, or
+  names the human gate that blocks it. "go" never skips a gate. A gaps
+  verdict whose verified commit is behind later code is treated as stale and
+  re-verified rather than re-planned.
+
+### PreCompact digest
+- New hook `hooks/pre-compact.js` (PreCompact): prints the disk-derived
+  position — phase, plan tally, verification state — so compaction keeps it.
+  Never blocks. Six hook events now.
+
+### Built and removed: a mechanism to keep a session running
+This release also built, audited and **deleted** a durable "grant" with a
+Stop-hook driver that continued the session between turns. It is recorded
+here because the history is in the branch and the lesson is the point:
+- Three designs failed three blind adversarial audits. Binding by transcript
+  text bound the wrong session; command-text guards with a permission prompt
+  were bypassed five ways (extensionless script, case, a shell variable, a
+  line continuation, the PowerShell tool); issuing from the human's prompt
+  failed because **UserPromptSubmit is not a human-only event** — subagent
+  hand-backs, scheduled prompts and other sessions fire it.
+- In every complete live run the driver never fired: background completions
+  already carried the loop.
+- So it was removed entirely — grant library, Stop-hook driver, prompt hook,
+  file guard, CLI and their 110 tests. Nothing in potion keeps a session
+  running; if a run ever idles, `/potion:next` or "go" picks it up.
+- Intermediate commits on this branch (doctor grant checks, pause gating the
+  grant, hardened caps, human-typed grant wording in README/CORE/PHILOSOPHY)
+  all belong to that removed mechanism and have no effect on the release.
+
+### Docs and housekeeping
+- README, CORE and PHILOSOPHY describe auto mode as shipped: seventeen
+  skills, six hook events.
+- `scripts/precompact-test.sh` (5 cases); nine test scripts, 102 cases.
+- Known limit, queued: `merge-specs.sh` rejects a phase in which several
+  plans touch the same requirement; this release's specs were applied plan
+  by plan.
+
 ## 1.17.0 — 2026-11-25
 
 Field-evidence fixes. A usage audit across 21 potion repos and 73 transcript

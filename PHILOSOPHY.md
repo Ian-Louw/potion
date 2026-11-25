@@ -81,6 +81,13 @@ Rule 4 always wins. Genuinely unsure which rule applies? That's Rule 4.
 Every deviation is recorded in the SUMMARY — or the line "None: plan executed
 exactly as written."
 
+Auto mode is calibrated autonomy across a whole phase: `/potion:brew` turns
+the crank from plan to a verification verdict, in fresh contexts, and stops at
+every gate. It deliberately has no mechanism that keeps a session running —
+one was built, failed three adversarial audits, and never fired in a complete
+run. Field evidence for the loop itself: half of all typed commands followed a
+/clear the skills prescribed, and one user message in five was a bare 'go'.
+
 ## 8. Circuit breakers, not willpower
 
 Runaway loops are stopped by numbers, not by good intentions:

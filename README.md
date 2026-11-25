@@ -7,7 +7,7 @@
 
 <br/>
 
-[![License](https://img.shields.io/github/license/Ian-Louw/potion)](LICENSE) [![Release](https://img.shields.io/github/v/release/Ian-Louw/potion)](https://github.com/Ian-Louw/potion/releases) ![Skills](https://img.shields.io/badge/skills-16-blueviolet) ![Agents](https://img.shields.io/badge/agents-2-blueviolet) ![Hooks](https://img.shields.io/badge/hooks-5-blueviolet) ![Brewed with itself](https://img.shields.io/badge/brewed_with-itself-8A2BE2)
+[![License](https://img.shields.io/github/license/Ian-Louw/potion)](LICENSE) [![Release](https://img.shields.io/github/v/release/Ian-Louw/potion)](https://github.com/Ian-Louw/potion/releases) ![Skills](https://img.shields.io/badge/skills-17-blueviolet) ![Agents](https://img.shields.io/badge/agents-2-blueviolet) ![Hooks](https://img.shields.io/badge/hooks-6-blueviolet) ![Brewed with itself](https://img.shields.io/badge/brewed_with-itself-8A2BE2)
 
 </div>
 
@@ -21,10 +21,11 @@ graph LR
 Plus utilities: `/potion:pause` · `/potion:resume` · `/potion:learn` ·
 `/potion:investigate` · `/potion:pair` · `/potion:update` ·
 `/potion:consolidate` · `/potion:doctor` (read-only health check) ·
-`/potion:evidence` (repeatable field-evidence pass) — and **`/potion:brew`** runs the whole crank
+`/potion:evidence` (repeatable field-evidence pass) · `/potion:next` (runs
+whatever step is next) — and **`/potion:brew`** runs the whole crank
 end-to-end, stopping only at human gates.
 
-**Sixteen skills. Two agents. Five hooks.** No ceremony. Potion brews
+**Seventeen skills. Two agents. Six hook events.** No ceremony. Potion brews
 itself — every release was developed in a potion-managed repo, and it
 red-teamed its own verifier with five seeded defects. It caught all five.
 
@@ -127,8 +128,15 @@ a round of guess-the-number and saving the transcript:
 `verdict: pass` — that's not the agent's opinion, that's the ladder.
 
 From here, **`/potion:brew`** automates the crank — plan → execute → verify →
-gap-cycle in one command, stopping only at human gates. Decisions stay yours:
-brew refuses to run without a locked DISCUSSION.md.
+gap-cycle in one command, stopping only at human gates; decisions stay yours,
+so brew refuses to run without a locked DISCUSSION.md.
+
+**Auto mode:** `/potion:brew` carries a discussed phase from plan to a
+verification verdict in one go — planning and verification run in fresh
+subagents, so there is no `/clear` between steps, and each stage's agents hand
+back to the session on their own, so there is no typing "go". Every human gate
+still stops it and it never ships. Nothing in potion keeps a session running:
+if a run ever idles, `/potion:next` (or "go") picks up the next step.
 
 ## 🔁 Closed loops by design
 
@@ -205,11 +213,11 @@ potion/
 ├── core/CORE.md            # shared contract: voice, questions, evidence, statuses
 ├── skills/                 # init, discuss, plan, execute, verify, ship, brew,
 │                           #   pause, resume, learn, investigate, pair, update,
-│                           #   consolidate, doctor, evidence
+│                           #   consolidate, doctor, evidence, next
 ├── agents/                 # potion-worker (executor), potion-verifier (auditor)
 ├── hooks/                  # session-start (position + drift notices), secret/size
 │                           #   scrubber, escalation approver, stop-drift nudge,
-│                           #   worker-finish guard
+│                           #   worker-finish guard, pre-compact digest
 ├── templates/              # PROJECT.md, STATE.md, PLAN.md, RUNBOOK.md, SUMMARY.md,
 │                           #   VERIFICATION.md, spec.md, verify-env.md, escalations.md,
 │                           #   continue-here.md

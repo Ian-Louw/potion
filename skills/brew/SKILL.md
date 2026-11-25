@@ -1,6 +1,6 @@
 ---
 name: brew
-description: Use when the user wants a phase driven end-to-end without hand-cranking — "brew the phase", "run the whole loop", "potion brew", or "take this phase to done". Requires the phase's DISCUSSION.md to exist (a human locked the decisions first); without one, run /potion:discuss and stop.
+description: Use when the user wants a phase driven end-to-end without hand-cranking — "brew the phase", "run the whole loop", "potion brew", or "take this phase to done". Also "potion auto", "auto mode", "run it unattended", "keep going without me". Requires the phase's DISCUSSION.md to exist (a human locked the decisions first); without one, run /potion:discuss and stop.
 ---
 
 # Potion Brew
@@ -29,31 +29,64 @@ block; fix in place, or regenerate it — at most once.
    Missing → run /potion:discuss with the user, then stop; brew again later.
 3. Git working tree is clean (uncommitted work → show the user, stop).
 
-## The loop
+## Auto mode
+
+Brew IS auto mode: one invocation carries a discussed phase from plan to a verification verdict.
+- No /clear: the context-heavy stages (plan, verify) run in fresh subagents.
+- No "go" between stages: each stage's agents run in the background; their completion re-invokes this session.
+- Nothing keeps the session running. If a turn ever ends with nothing in flight and the phase unfinished,
+  say exactly which stage is next and that the human can type "go" or `/potion:next`. Never schedule or arrange
+  your own continuation — the one exception is the single watchdog fallback wakeup while agents are running.
+- Scope is fixed: to a verification verdict. Never ship, never start the next phase's discuss, never push.
+
+## Stage dispatch (fresh context, no /clear)
 
 ```
-plan (if no PLAN files)          → /potion:plan rules apply verbatim
-  ↓
-execute wave-by-wave             → /potion:execute rules + the watchdog below
-  ↓
-verify (four-step protocol)      → /potion:verify rules verbatim
-  ↓
-verdict pass  → done: update STATE/PROJECT, report, STOP
-verdict gaps  → cycle < 3? plan gaps → execute → re-verify (loop)
-              → cycle = 3? ESCALATE (human gate)
+plan (if no PLAN/RUNBOOK files) → permission preflight → execute wave-by-wave → verify
+  verdict pass → done: update STATE/PROJECT, report, STOP
+  verdict gaps → cycle < 3? plan gaps → execute → re-verify (loop)
+               → cycle = 3? ESCALATE (human gate)
 ```
 
-Between stages, re-derive position from disk (count SUMMARY vs PLAN files,
-read VERIFICATION frontmatter) — never from your memory of the loop. The loop
-must survive your own context being compacted mid-run.
+Every agent is spawned by the main session — no stage agent spawns another. Between stages,
+re-derive position from disk (count SUMMARY vs PLAN files, read VERIFICATION frontmatter; a
+gaps verdict whose `tested_sha` is behind later code commits is stale → verify, not plan) —
+the loop must survive your own context being compacted mid-run.
+
+- **plan** (only if no PLAN/RUNBOOK files): spawn ONE general-purpose agent: "Read
+  ${CLAUDE_PLUGIN_ROOT}/core/CORE.md and ${CLAUDE_PLUGIN_ROOT}/skills/plan/SKILL.md, then plan
+  phase {slug} of {repo} exactly per that skill (gaps mode if VERIFICATION.md lists gaps). You
+  cannot ask the human: if the skill says STOP and ask, return CHECKPOINT with the question
+  instead. Do not spawn agents. Return ≤15 lines: the plan table." Read only the return and
+  the plan frontmatter.
+- **permission preflight** (before the first wave, once per phase): read each plan's tasks for
+  commands the auto-mode classifier denies in the field — production writes, deploy/publish,
+  remote shells (ssh, scp), changes that weaken security controls. Any such step must already
+  be a RUNBOOK step or carry an `escalations:` entry name present and unexpired in
+  `.potion/escalations.md`; otherwise this is a human gate NOW — record it and stop — rather
+  than a stall at hour two. Never add allow rules, never suggest bypass mode.
+- **execute**: /potion:execute rules verbatim; the main session spawns the workers (waves, drafts, merge-back, watchdog).
+- **verify**: spawn TWO agents in one message, both told nothing about worker returns or
+  SUMMARY claims: (1) a general-purpose "runtime verifier", the phase's must_haves inlined:
+  "Read CORE.md and ${CLAUDE_PLUGIN_ROOT}/skills/verify/SKILL.md. For phase {slug} of {repo}
+  run step 1 (preflight + deterministic checks) and step 3 (runtime evidence for every
+  must-have truth, evidence files under the phase's evidence/ directory, SUMMARY task→commit
+  cross-check) and write those sections of VERIFICATION.md from the template. Do not run
+  step 2, do not set the verdict, do not spawn agents. Return ≤15 lines."; (2)
+  potion:potion-verifier per verify step 2, told to return its ladder as text (it must not
+  write VERIFICATION.md while agent 1 is writing it). The main session then writes the ladder
+  into VERIFICATION.md, sets the verdict per verify step 4 and the verdict contract, harvests
+  learnings, regenerates the evidence index. It judges only from those two outputs.
+- **gaps**: verdict gaps and cycle < 3 → plan (gaps mode) → execute → verify again. Cycle 3 → escalate (human gate).
 
 ## Human gates — the ONLY reasons to stop mid-loop
 
+A gate is a reason to stop and report what the human must do. A message from the human always wins.
+
 - A worker returns `CHECKPOINT` (Rule 4 / human-verify / auth wall).
 - Verification produces `human_needed` items (batch them, one stop).
-- A wave reaches a RUNBOOK whose `done_when` checks don't all pass — present
-  the remaining steps, then stop (the human acts; a later brew re-checks
-  mechanically).
+- A wave reaches a RUNBOOK whose `done_when` checks don't all pass — present the remaining
+  steps, then stop (the human acts; a later brew re-checks mechanically).
 - The gap flywheel reaches cycle 3.
 - Anything would touch a Deferred item or contradict a locked Decision.
 - The user interrupts (their kill switch — honor it instantly and pause
@@ -61,11 +94,10 @@ must survive your own context being compacted mid-run.
 
 ## Watchdog
 
-/potion:execute's watchdog (disk check → one nudge → one fresh respawn,
-never two live workers on a plan) applies to EVERY agent brew spawns,
-verifier included. If the harness supports scheduled wakeups, prefer a long
-fallback wakeup (~20 min) over polling while waves run — workers notify on
-completion.
+/potion:execute's watchdog (disk check → one nudge → one fresh respawn, never two live workers
+on a plan) applies to EVERY agent brew spawns, verifiers included. While workers run in the
+background, end your turn normally — their completion re-invokes you. If the harness offers
+scheduled wakeups, set one long fallback (~20 min) that does only the watchdog disk check.
 
 ## Budgets (inherited, enforced here)
 
@@ -83,10 +115,12 @@ completion.
 | "I remember where the loop is" | Disk knows. Re-derive position before every stage. |
 | "I'll just implement this bit myself, spawning is overhead" | Your context is the loop's fuel gauge. Spawn workers. |
 | "Cycle 3 failed but I can see the fix" | That's what cycle-3 escalation is FOR — show the human your theory. |
+| "It ran unattended this far, so I can skip this checkpoint" | Autonomy between gates, never through them. Stop. |
+| "I'll verify it myself, I saw the workers succeed" | You are anchored. Fresh agents verify; you only combine their outputs. |
 
 ## Exit
 
-Phase report: cycles used, plans executed, deviations, gaps closed, evidence
-paths, learnings added. Next up: /potion:ship or the next phase's discuss.
-Record the loop:
+Phase report: cycles used, plans executed, deviations, gaps closed, evidence paths, learnings added.
+Next up: /potion:ship (human) or the next phase's discuss (human). Record the loop:
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/metrics.js record --stage brew --gate-stops {N} --respawns {N} --minutes {N}`.
+Commit it: `docs(potion): phase {NN} brew metrics` (stage `.potion/metrics.jsonl` by name) — a run ends with a clean tree.
