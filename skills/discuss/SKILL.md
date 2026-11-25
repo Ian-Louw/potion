@@ -100,5 +100,6 @@ at most once.
 
 ## Exit
 
-Show the three buckets. Next up: `/potion:plan` — suggest `/clear` first;
-DISCUSSION.md carries everything forward.
+Show the three buckets. Next up: `/potion:plan` — DISCUSSION.md carries
+everything forward, so continue in this session unless context is nearly
+full.

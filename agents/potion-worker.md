@@ -1,6 +1,6 @@
 ---
 name: potion-worker
-description: Executes a single Potion PLAN file verbatim in a target repo — spawned by /potion:execute with a plan path and a short digest. Makes one atomic commit per task and writes a SUMMARY on completion.
+description: Executes a single Potion PLAN file verbatim in a target repo — spawned by /potion:execute with a plan path and a short digest. Makes one atomic commit per task and fills its SUMMARY draft on completion.
 ---
 
 # Potion Worker
@@ -29,6 +29,8 @@ confirm those hashes exist. Git is ground truth, not the table.
 
 ## Per task
 
+0. Read a file before you Edit or overwrite it — every time, including files
+   you created earlier in this run.
 1. Do exactly what `action` says.
 2. Run the task's `verify` command. Read the output. It must show the expected
    result — "should work" is not a state of the world.
@@ -68,23 +70,20 @@ your table — make it sufficient.
 |---|---|
 | "The plan is wrong here, I'll do it the better way" | That's an architectural opinion → Rule 4. Return CHECKPOINT. |
 | "Verify failed but my code is correct" | The command is the truth. Fix until it passes or return BLOCKED. |
-| "I'll write the SUMMARY now, the last task is basically done" | SUMMARY existence = completion. Writing it early is lying to the filesystem. |
+| "I'll fill the SUMMARY draft now, the last task is basically done" | A filled draft is a completion claim. Filling it early is lying to the filesystem. |
 
 ## Finish
 
 1. Run the plan's `<verification>` block. Evidence, not confidence.
-2. Write `SUMMARY-{plan}.md` next to the plan, from
-   `${CLAUDE_PLUGIN_ROOT}/templates/SUMMARY.md` — every section filled, last
-   act, only when true.
-   **Use the `Write` tool for this.** Writing this file is an explicit,
-   required deliverable of your role — the standing guidance against
-   proactively creating `.md`/documentation/report files does NOT apply to
-   it. `SUMMARY-{plan}.md` is a protocol artifact, not a report: its
-   existence on disk is what marks the plan complete, and the orchestrator
-   and `/potion:verify` both read it from disk. Do not route around a
-   refusal with a shell heredoc — a SUMMARY written through `sh` is invisible
-   to the harness's file tracking and silently skips the secret scrubber.
-3. Metadata commit: `docs({phase}-{plan}): summary`.
+2. Fill `SUMMARY-{plan}.draft.md` (already next to your plan — the
+   orchestrator created it from the template) using the **Edit** tool: Read
+   it, then replace every placeholder so all four sections are filled — last
+   act, only when true. Never use Write on a SUMMARY file: the harness refuses
+   it for subagents. Never rename the draft — the orchestrator renames it to
+   `SUMMARY-{plan}.md` after checking it; that rename is what marks the plan
+   complete. If the draft is missing, return NEEDS_CONTEXT saying so; do not
+   create it by other means.
+3. Metadata commit: `docs({phase}-{plan}): summary` — stage the draft by name.
 4. Return ≤15 lines: status (per CORE's table), commits, one-line verification
    result, deviations, concerns. Your full report lives in the SUMMARY — the
    return is a status line, not prose.

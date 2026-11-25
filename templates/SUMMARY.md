@@ -1,6 +1,8 @@
 # Summary — plan {NN}
 
-<!-- The existence of this file marks the plan complete. Write it LAST, only when true. -->
+<!-- The existence of SUMMARY-NN.md marks the plan complete. Workers fill
+SUMMARY-NN.draft.md with the Edit tool (the harness refuses subagent Write on
+SUMMARY files); the orchestrator renames it once every section is filled. -->
 
 <!-- Runbook variant: add frontmatter `type: runbook` above the title and
 replace the "Task → commit" table with a "Step → result" table — Result is

@@ -28,11 +28,23 @@ const PATTERNS = [
 
 const SIZE_CAP_BYTES = 256 * 1024;
 
-function block(patternName, file) {
+// Remedy sentence for a declared-value block. Names the KEY, never the value.
+function declaredRemedy(key) {
+  return (
+    ` Remedy: refer to it by name ('${key} in .potion/verify-env.local') ` +
+    "instead of pasting the value. If this value is public or already " +
+    "committed elsewhere, it should not be declared in verify-env.local — " +
+    "remove the declaration (public values belong in verify-env.md)."
+  );
+}
+
+function block(patternName, file, remedy = "") {
   process.stderr.write(
     `POTION SCRUB: blocked — ${patternName} in ${file}. ` +
       "Secrets never enter .potion/ commits. If this is a false positive, " +
-      "the human can commit manually.\n"
+      "the human can commit manually." +
+      remedy +
+      "\n"
   );
   process.exit(2);
 }
@@ -42,7 +54,9 @@ function blockOversize(file, bytes) {
     `POTION SCRUB: blocked — ${file} is ${Math.round(bytes / 1024)} KB ` +
       `(cap ${SIZE_CAP_BYTES / 1024} KB). Trim evidence to the relevant ` +
       "window — raw multi-MB logs never enter .potion/. If the full file " +
-      "is genuinely needed, the human can commit manually.\n"
+      "is genuinely needed, the human can commit manually." +
+      " Remedy: this whole command was rejected before any part of it " +
+      "ran — shrink or trim the file in a separate command, then commit.\n"
   );
   process.exit(2);
 }
@@ -146,7 +160,8 @@ function main() {
           if (chunkAdded.includes(s.value)) {
             block(
               `declared secret ${s.key} (value from verify-env.local)`,
-              chunk.file
+              chunk.file,
+              declaredRemedy(s.key)
             );
           }
         }
@@ -200,7 +215,8 @@ function main() {
             `standing leak — ${l.file} contains declared secret ` +
               `${l.keys.join(", ")} (retro-scan; clean the file before ` +
               "committing to it)",
-            l.file
+            l.file,
+            declaredRemedy(l.keys.join(", "))
           );
         }
       }
@@ -233,7 +249,8 @@ function main() {
       if (content.includes(s.value)) {
         block(
           `declared secret ${s.key} (value from verify-env.local)`,
-          rel
+          rel,
+          declaredRemedy(s.key)
         );
       }
     }

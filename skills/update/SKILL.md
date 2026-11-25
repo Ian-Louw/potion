@@ -36,11 +36,14 @@ migrated, not the plugin repo).
    Transform: create `.potion/specs/` containing a 3-line README.md:
    current-truth statement, format pointer to potion's templates/spec.md,
    "mutated only by merge-specs.sh on ship, or a human".
-4. **M4 repo-side hooks** — detect: `test -f .potion/scripts/pre-commit.js`
+4. **M4 repo-side hooks** — detect: `test -f .potion/scripts/pre-commit.cjs`
    fails, OR it passes but `.git/hooks/pre-commit` does not exist at all.
    Transform: run
    `sh "${CLAUDE_PLUGIN_ROOT}/scripts/install-repo-hooks.sh"` from the
-   target repo root. On its refusal (existing foreign hook): surface the
+   target repo root. A legacy `.js` mirror (it crashes under a package.json
+   with `"type": "module"`) is replaced by re-running install-repo-hooks.sh:
+   the script installs the `.cjs` mirror, removes the old file, and rewrites
+   potion's own old shim without --force. On its refusal (existing foreign hook): surface the
    refusal verbatim, ask the human, re-run with --force ONLY on their
    explicit word — never force unprompted. Mirror installed + foreign hook
    still in place is the signature of a declined force — a STANDING human

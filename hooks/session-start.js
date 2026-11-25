@@ -14,6 +14,7 @@ const { loadDeclaredSecrets, findLeakedFiles } = require(path.join(
   "declared-secrets.js"
 ));
 const { loadEscalations } = require(path.join(__dirname, "escalations.js"));
+const { resolvePhase } = require(path.join(__dirname, "phase-slug.js"));
 
 const root = process.cwd();
 const potionDir = path.join(root, ".potion");
@@ -81,6 +82,49 @@ function readStdinSource() {
   }
 }
 
+// Standing-notice throttle: grammar-drift, doc-staleness and
+// evidence-staleness show at most once per local calendar day per repo.
+// Store shape: { "<abs repo cwd>": { "<notice name>": "YYYY-MM-DD" } }.
+// POTION_NOTICES_FILE overrides the path (tests never touch the real file).
+function noticesFile() {
+  return (
+    process.env.POTION_NOTICES_FILE ||
+    path.join(os.homedir(), ".claude", "potion", "notices.json")
+  );
+}
+
+function shouldShow(repo, name) {
+  // Never throws. Any read/parse/write error → true (show the notice).
+  // Call ONLY when the notice would otherwise print: a true return records
+  // today as the last-shown date.
+  try {
+    // These notices are not position information: on /clear and compaction
+    // they are suppressed entirely.
+    if (source === "clear" || source === "compact") return false;
+    const file = noticesFile();
+    const today = new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD, local
+    let store = {};
+    try {
+      const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        store = parsed;
+      }
+    } catch {
+      /* missing or garbage store → start fresh; the notice shows */
+    }
+    const entry =
+      store[repo] && typeof store[repo] === "object" ? store[repo] : {};
+    if (entry[name] === today) return false;
+    entry[name] = today;
+    store[repo] = entry;
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify(store, null, 2) + "\n");
+    return true;
+  } catch {
+    return true;
+  }
+}
+
 function positionSection(stateText) {
   // The "## Position" section verbatim, up to the next H2.
   // No /m flag: `$` must mean end-of-string, or the lazy capture stops at
@@ -90,15 +134,12 @@ function positionSection(stateText) {
 }
 
 function planTally(stateText) {
-  // Derive the phase dir from the "- Phase:" line's slug, then count
-  // PLAN-*.md vs SUMMARY-*.md — SUMMARY existence = plan complete.
+  // Resolve the phase dir from the "- Phase:" line (shared resolver), then
+  // count PLAN-*.md vs SUMMARY-*.md — SUMMARY existence = plan complete.
   try {
-    const phaseLine = stateText.match(/^- Phase:.*$/m);
-    if (!phaseLine) return null;
-    const slug = phaseLine[0].match(/\b(\d+(?:\.\d+)?-[a-z0-9-]+)/);
-    if (!slug) return null;
-    const dir = path.join(potionDir, "phases", slug[1]);
-    const files = fs.readdirSync(dir);
+    const phase = resolvePhase(stateText, potionDir);
+    if (!phase) return null;
+    const files = fs.readdirSync(phase.dir);
     const total = files.filter((f) => /^PLAN-\d+\.md$/.test(f)).length;
     const done = files.filter((f) => /^SUMMARY-\d+\.md$/.test(f)).length;
     return `Plans: ${done} of ${total} complete (SUMMARY existence)`;
@@ -280,12 +321,9 @@ try {
     // where an unbounded class would capture past the gate line's end.
     const gateRe = /gate:\s*"?([^",}\n]+)"?/;
     const expRe = /expires:\s*"?(\d{4}-\d{2}-\d{2})/;
-    const phaseLine = state ? state.match(/^- Phase:.*$/m) : null;
-    const slug = phaseLine
-      ? phaseLine[0].match(/\b(\d+(?:\.\d+)?-[a-z0-9-]+)/)
-      : null;
-    if (slug) {
-      const phaseDir = path.join(potionDir, "phases", slug[1]);
+    const phase = state ? resolvePhase(state, potionDir) : null;
+    if (phase) {
+      const phaseDir = phase.dir;
       const files = fs.readdirSync(phaseDir);
       const cleared = new Set(); // gate names resolved by a runbook SUMMARY
       const expired = []; // { name, date, src }
@@ -407,11 +445,11 @@ try {
       }
       if (reasons.length) stale.push(`${d.path}: ${reasons.join(" and ")}`);
     }
-    if (stale.length) {
+    if (stale.length && shouldShow(root, "doc-staleness")) {
       parts.push("\n## POTION DOC STALENESS — consolidation-managed docs have drifted");
       for (const s of stale) parts.push(`- ${s}`);
       parts.push(
-        "Run /potion:consolidate — nag only, nothing has been changed automatically."
+        "Run /potion:consolidate — nag only, shown once a day."
       );
     }
   }
@@ -439,13 +477,19 @@ try {
   if (!fs.existsSync(path.join(potionDir, "specs"))) {
     drift.push(".potion/specs/ missing (living specs)");
   }
-  if (!fs.existsSync(path.join(potionDir, "scripts", "pre-commit.js"))) {
+  const mirrorCjs = fs.existsSync(path.join(potionDir, "scripts", "pre-commit.cjs"));
+  const mirrorJs = fs.existsSync(path.join(potionDir, "scripts", "pre-commit.js"));
+  if (!mirrorCjs && !mirrorJs) {
     drift.push("repo-side pre-commit mirror not installed");
+  } else if (!mirrorCjs) {
+    drift.push(
+      'repo-side pre-commit mirror is the legacy .js (breaks under "type": "module") — re-run install-repo-hooks.sh'
+    );
   }
   if (state && /^## Parked$/m.test(state)) {
     drift.push("legacy ## Parked section awaits interactive triage");
   }
-  if (drift.length) {
+  if (drift.length && shouldShow(root, "grammar-drift")) {
     parts.push(
       "\n## POTION GRAMMAR DRIFT — this repo predates current potion grammar"
     );
@@ -453,11 +497,47 @@ try {
       parts.push(`- ${d}`);
     }
     parts.push(
-      "Run /potion:update to migrate — nothing has been changed automatically."
+      "Run /potion:update to migrate (or /potion:doctor for the full picture) — shown once a day."
     );
   }
 } catch {
   /* warn-posture: never block a session over the grammar-drift scan */
+}
+
+// Evidence-staleness scan: the newest .potion/research/*field-evidence*.md
+// report being over 60 days old gets NOTICED — the improvement loop only
+// closes if field evidence keeps being gathered. Repos with no such report
+// get nothing. Notice-only. Warn-posture: any throw is swallowed — a
+// session is never blocked by this leg.
+try {
+  const EVIDENCE_STALE_DAYS = 60;
+  const evRe = /^(\d{4}-\d{2}-\d{2})-field-evidence.*\.md$/;
+  const dates = fs
+    .readdirSync(path.join(potionDir, "research"))
+    .map((f) => f.match(evRe))
+    .filter(Boolean)
+    .map((m) => m[1])
+    .sort();
+  if (dates.length) {
+    const newest = dates[dates.length - 1];
+    const todayStr = new Date().toLocaleDateString("sv-SE");
+    const age = Math.floor(
+      (Date.parse(todayStr + "T00:00:00Z") - Date.parse(newest + "T00:00:00Z")) /
+        86400000
+    );
+    if (
+      Number.isFinite(age) &&
+      age > EVIDENCE_STALE_DAYS &&
+      shouldShow(root, "evidence-staleness")
+    ) {
+      parts.push(
+        `\n## POTION EVIDENCE STALENESS — last field-evidence pass was ${newest} (${age} days ago)`
+      );
+      parts.push("Run /potion:evidence — nag only, shown once a day.");
+    }
+  }
+} catch {
+  /* warn-posture: never block a session over the evidence-staleness scan */
 }
 
 if (source === "compact" && state) {

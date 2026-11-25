@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // Potion repo-side pre-commit secret mirror.
-// Installed into a target repo as .potion/scripts/pre-commit.js by
+// Installed into a target repo as .potion/scripts/pre-commit.cjs by
 // scripts/install-repo-hooks.sh and invoked by a .git/hooks/pre-commit shim —
 // so the secret protection holds even when no potion plugin is loaded.
+// The .cjs extension keeps this CommonJS under a host package.json that
+// sets "type": "module".
 //
 // Self-contained: node builtins only, no requires from the plugin.
 // Scans STAGED content only (pre-commit fires at commit time; what is not
@@ -35,11 +37,23 @@ const PATTERNS = [
 const MIN_VALUE_LENGTH = 8;
 const LINE_RE = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+?)\s*$/;
 
-function block(what, file) {
+// Remedy sentence for a declared-value block. Names the KEY, never the value.
+function declaredRemedy(key) {
+  return (
+    ` Remedy: refer to it by name ('${key} in .potion/verify-env.local') ` +
+    "instead of pasting the value. If this value is public or already " +
+    "committed elsewhere, it should not be declared in verify-env.local — " +
+    "remove the declaration (public values belong in verify-env.md)."
+  );
+}
+
+function block(what, file, remedy = "") {
   process.stderr.write(
     `POTION PRE-COMMIT: blocked — ${what} in ${file}. ` +
       "Secrets never enter commits. " +
-      "Human override: git commit --no-verify.\n"
+      "Human override: git commit --no-verify." +
+      remedy +
+      "\n"
   );
   process.exit(1);
 }
@@ -132,7 +146,8 @@ function main() {
         if (chunk.text.includes(s.value)) {
           block(
             `declared secret ${s.key} (value from verify-env.local)`,
-            chunk.file
+            chunk.file,
+            declaredRemedy(s.key)
           );
         }
       }

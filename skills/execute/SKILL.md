@@ -26,7 +26,8 @@ against this block; fix in place, or regenerate — at most once.
 1. **Discover.** Read STATE.md Position — the target phase is the current
    phase (or the explicit argument if given). List `PLAN-*.md` AND
    `RUNBOOK-*.md` ONLY in that phase's directory. A unit with a matching
-   `SUMMARY-*.md` (same NN) is already complete — skip it, either kind.
+   `SUMMARY-*.md` (same NN) is already complete — skip it, either kind; a
+   `SUMMARY-NN.draft.md` never counts.
    Completion state is derived from artifact existence, never from a status
    field.
 
@@ -44,17 +45,22 @@ against this block; fix in place, or regenerate — at most once.
    and each worker of a 2+ wave has its own worktree and branch.
 
 3. **Spawn workers.** For each plan:
+   - Draft stub: copy `${CLAUDE_PLUGIN_ROOT}/templates/SUMMARY.md` to
+     `SUMMARY-{NN}.draft.md` next to the plan the worker will read (the
+     worktree copy when isolation is on), replacing `{NN}`. Leave it
+     uncommitted — the worker's metadata commit adds it. Skip if the draft
+     already exists (respawn).
    - Prompt = "First, read ${CLAUDE_PLUGIN_ROOT}/core/CORE.md (your contract)
      and ${CLAUDE_PLUGIN_ROOT}/agents/potion-worker.md (your role). Then read
      your plan at {absolute path to PLAN-NN.md} and execute it verbatim." +
      a ≤10-line digest: repo path (when isolation is on, this IS the worker's
      worktree path, and the plan path is the worktree's copy), current STATE
-     position, any concerns
+     position, the draft path, any concerns
      carried from prior plans + up to 3 learning keys relevant to the plan's
      files (`{key}: {one-line insight}`) pulled from `.potion/learnings.jsonl`
      — skip the line if none match. Pointer shape per the contract above.
-   - Done when each worker's SUMMARY is on disk and its ≤15-line return is
-     routed.
+   - Done when each worker's ≤15-line return is routed and its draft is
+     accepted.
 
 4. **Route returns** by status (see CORE.md table). On `CHECKPOINT` returns
    (Rule 4 deviation or human-verify), present the worker's completed-tasks table,
@@ -87,8 +93,16 @@ steps the human completed between sessions confirm mechanically.
 6. **After each wave:** in the main working tree, merge each worker branch
    SEQUENTIALLY — `git merge --no-ff potion/wave{W}-plan{NN}`, one at a time,
    never octopus (learning: octopus-merge-divergent-bases); both-sides-keep
-   conflicts resolve by keeping both additions. Only after every branch has
-   landed, compute progress from SUMMARY existence and update STATE.md
+   conflicts resolve by keeping both additions. Once every branch has landed,
+   accept drafts: for each plan whose worker returned DONE or
+   DONE_WITH_CONCERNS, check its draft is fully filled — all four headings
+   (`## Built`, `## Task → commit`, `## Deviations`, `## Concerns`) present
+   and none of `{2-4 sentences`, `{hash}`, `{Anything the verifier` left. If
+   so, `git mv SUMMARY-{NN}.draft.md SUMMARY-{NN}.md` and commit
+   `docs({phase}-{NN}): summary accepted`; if not, send the worker one
+   message naming the unfilled section, and if still unfilled treat the plan
+   as BLOCKED. A draft from a CHECKPOINT/BLOCKED/NEEDS_CONTEXT return stays a
+   draft. Only then compute progress from SUMMARY existence and update STATE.md
    position (learning: worktree-stale-base). Cleanup per worker:
    `git worktree remove ../{repo-dirname}-wt-{NN}` then
    `git branch -d potion/wave{W}-plan{NN}`. A failed plan is discarded, not
@@ -115,7 +129,7 @@ run /potion:discuss.
 | Thought | Reality |
 |---|---|
 | "I'll just implement this plan myself, it's short" | Your context is the orchestration budget. Spawn the worker. |
-| "The worker said done, moving on" | Its SUMMARY exists? Its commits exist? Then move on. |
+| "The worker said done, moving on" | Its draft is fully filled and renamed? Its commits exist? Then move on. |
 | "I'll batch all checkpoint questions at the end" | Checkpoints block their wave. Handle them when they fire. |
 
 ## Exit
@@ -124,4 +138,5 @@ Phase report: plans completed, deviations, concerns. Route every SUMMARY
 concern that no next plan consumes into STATE.md's ## Fog, one line each,
 tagged `from SUMMARY-NN`. Nothing evaporates. Next up: `/potion:verify`
 — suggest `/clear` first: verification must not be anchored by what this
-session watched the workers claim.
+session watched the workers claim. Record the stage:
+`node ${CLAUDE_PLUGIN_ROOT}/scripts/metrics.js record --stage execute --workers {N} --waves {N} --max-wave-width {N} --respawns {N} --gate-stops {N}`.

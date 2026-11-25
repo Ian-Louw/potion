@@ -13,7 +13,7 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Creates the project's durable memo
 `none-needed: <why>` — never absent); `.potion/phases/01-{slug}/` directory;
 the `merge=union` line in `.gitattributes`; the `verify-env.local` line in
 `.gitignore`; the installed repo-side pre-commit hook (`.git/hooks/pre-commit`
-shim + `.potion/scripts/pre-commit.js`, or a surfaced refusal); the init
+shim + `.potion/scripts/pre-commit.cjs`, or a surfaced refusal); the init
 commit. Before finishing, re-read the emitted files
 against this block; fix in place, or regenerate —
 at most once.

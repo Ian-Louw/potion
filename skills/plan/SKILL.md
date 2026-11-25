@@ -147,4 +147,4 @@ this would be cycle 4, stop and escalate instead — the flywheel budget is 3.
 ## Exit
 
 Summary table: plan | wave | tasks | must-have truths. Next up: `/potion:execute`
-— suggest `/clear` first; the plans carry everything.
+— the plans carry everything; continue here unless context is nearly full.

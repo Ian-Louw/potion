@@ -30,9 +30,10 @@ Inherit `${CLAUDE_PLUGIN_ROOT}/core/CORE.md`. Restore position from disk, verify
    as decide-renew-or-abandon (renewal = one conscious line bumping expires).
    **Grammar-drift sweep:** run the five checks — `test -f
    .potion/verify-env.md`, `grep -q '^## Fog' .potion/STATE.md`, `grep -q
-   '^## Decision queue' .potion/STATE.md`, `test -d .potion/specs`, `test -f
-   .potion/scripts/pre-commit.js`, plus `grep -q '^## Parked'
-   .potion/STATE.md` for the legacy flag. Any failing check (or a Parked
+   '^## Decision queue' .potion/STATE.md`, `test -d .potion/specs`,
+   `test -f .potion/scripts/pre-commit.cjs` (a lone legacy `pre-commit.js`
+   counts as drift — it breaks under `"type": "module"`), plus `grep -q
+   '^## Parked' .potion/STATE.md` for the legacy flag. Any failing check (or a Parked
    hit) is queued for the step-4 brief as one line: "grammar drift:
    {missing list} — offer /potion:update (notice only; resume never
    migrates)". Do not create, edit, or commit anything — /potion:update is

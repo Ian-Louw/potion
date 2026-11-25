@@ -145,6 +145,6 @@ Verdict per truth, gap count, evidence collected. Route non-gap findings —
 your own judgment calls and the blind verifier's non-blocking observations —
 into STATE.md's ## Fog, one line each, tagged `from cycle-N verifier`; items
 recording an observed failure get `- [defect]` at line start. Blocking human
-calls go to ## Decision queue with added/expires dates instead.
-Nothing evaporates. Clean → `/potion:ship`. Gaps → `/potion:plan` gaps mode
-(mention the cycle number).
+calls go to ## Decision queue with added/expires dates instead — nothing
+evaporates. Clean → `/potion:ship`. Gaps → `/potion:plan` gaps mode (mention the cycle
+number). Record: `node ${CLAUDE_PLUGIN_ROOT}/scripts/metrics.js record --stage verify --gaps {N}`.

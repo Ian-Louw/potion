@@ -88,3 +88,5 @@ completion.
 
 Phase report: cycles used, plans executed, deviations, gaps closed, evidence
 paths, learnings added. Next up: /potion:ship or the next phase's discuss.
+Record the loop:
+`node ${CLAUDE_PLUGIN_ROOT}/scripts/metrics.js record --stage brew --gate-stops {N} --respawns {N} --minutes {N}`.

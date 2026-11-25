@@ -7,7 +7,7 @@
 
 <br/>
 
-[![License](https://img.shields.io/github/license/Ian-Louw/potion)](LICENSE) [![Release](https://img.shields.io/github/v/release/Ian-Louw/potion)](https://github.com/Ian-Louw/potion/releases) ![Skills](https://img.shields.io/badge/skills-13-blueviolet) ![Agents](https://img.shields.io/badge/agents-2-blueviolet) ![Hooks](https://img.shields.io/badge/hooks-4-blueviolet) ![Brewed with itself](https://img.shields.io/badge/brewed_with-itself-8A2BE2)
+[![License](https://img.shields.io/github/license/Ian-Louw/potion)](LICENSE) [![Release](https://img.shields.io/github/v/release/Ian-Louw/potion)](https://github.com/Ian-Louw/potion/releases) ![Skills](https://img.shields.io/badge/skills-16-blueviolet) ![Agents](https://img.shields.io/badge/agents-2-blueviolet) ![Hooks](https://img.shields.io/badge/hooks-5-blueviolet) ![Brewed with itself](https://img.shields.io/badge/brewed_with-itself-8A2BE2)
 
 </div>
 
@@ -19,10 +19,12 @@ graph LR
 ```
 
 Plus utilities: `/potion:pause` · `/potion:resume` · `/potion:learn` ·
-`/potion:investigate` · `/potion:pair` · `/potion:update` — and **`/potion:brew`** runs the whole crank
+`/potion:investigate` · `/potion:pair` · `/potion:update` ·
+`/potion:consolidate` · `/potion:doctor` (read-only health check) ·
+`/potion:evidence` (repeatable field-evidence pass) — and **`/potion:brew`** runs the whole crank
 end-to-end, stopping only at human gates.
 
-**Thirteen skills. Two agents. Four hooks.** No ceremony. Potion brews
+**Sixteen skills. Two agents. Five hooks.** No ceremony. Potion brews
 itself — every release was developed in a potion-managed repo, and it
 red-teamed its own verifier with five seeded defects. It caught all five.
 
@@ -202,13 +204,17 @@ the verifier runs on every pass.
 potion/
 ├── core/CORE.md            # shared contract: voice, questions, evidence, statuses
 ├── skills/                 # init, discuss, plan, execute, verify, ship, brew,
-│                           #   pause, resume, learn, investigate, pair, update
+│                           #   pause, resume, learn, investigate, pair, update,
+│                           #   consolidate, doctor, evidence
 ├── agents/                 # potion-worker (executor), potion-verifier (auditor)
 ├── hooks/                  # session-start (position + drift notices), secret/size
-│                           #   scrubber, escalation approver, stop-drift nudge
+│                           #   scrubber, escalation approver, stop-drift nudge,
+│                           #   worker-finish guard
 ├── templates/              # PROJECT.md, STATE.md, PLAN.md, RUNBOOK.md, SUMMARY.md,
 │                           #   VERIFICATION.md, spec.md, verify-env.md, escalations.md,
 │                           #   continue-here.md
+├── scripts/                # merge-specs, ci-verify, install-repo-hooks, doctor,
+│                           #   metrics, field-evidence, *-test.sh
 └── PHILOSOPHY.md
 ```
 

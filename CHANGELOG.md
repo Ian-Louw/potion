@@ -4,6 +4,78 @@
 > dogfood). Commit hashes and evidence paths cited below refer to that repo's
 > history; this public repo carries one clean commit per release.
 
+## 1.17.0 — 2026-11-25
+
+Field-evidence fixes. A usage audit across 21 potion repos and 73 transcript
+sessions found the execute loop fighting the harness: 93% of worker SUMMARY
+writes were refused, the Stop hook absorbed the fallout 166 times, and half
+of all typed potion commands followed a `/clear` the skills themselves
+prescribed. This release fixes what was observed and makes the next audit a
+command instead of a research project.
+
+### Worker SUMMARY delivery the harness accepts
+- Reproduced first: the harness refuses a subagent's `Write` on any
+  `SUMMARY-*.md` basename — a tool-level refusal, so the 1.15.1 instruction
+  text could not help. `Edit` on the same file is accepted (10 of 10).
+- New protocol: `/potion:execute` creates `SUMMARY-NN.draft.md` from the
+  template when it spawns a worker; the worker fills it with `Edit` as its
+  last act; the orchestrator checks all four sections are filled and renames
+  it to `SUMMARY-NN.md`. Existence of `SUMMARY-NN.md` remains the completion
+  signal; a draft never counts.
+- `agents/potion-worker.md` drops the "use the Write tool" paragraph and
+  gains a Read-before-Edit rule (80 field errors).
+- New hook `hooks/worker-finish.js` on **SubagentStop** (matcher
+  `^potion:potion-worker$`): a worker that stops with an unfilled draft and a
+  DONE-type status is blocked once and told which file to fill. One-shot,
+  fail-open. Observed live in a headless run.
+
+### One phase resolver, and it does not guess
+- New `hooks/phase-slug.js`, used by stop-drift, session-start, metrics and
+  doctor: a number at the very start of STATE's Phase value, or else the
+  first slug-shaped token if it is an existing phase directory. Anything else
+  resolves to nothing. Previously stop-drift's SUMMARY check silently never
+  ran on `NN (slug)` lines, and a date on the line could be taken as the slug.
+- STATE.md gains a 12,000-byte cap beside the 60-line cap.
+- `scripts/phase-slug-test.sh`: 36-row table of hand-written Phase lines.
+- Known limit: a hand-written line that starts with a count, or names another
+  existing phase's slug first, resolves to that phase. Write the line as
+  `N of M — NN-slug`.
+
+### Scrubber: one crash fixed, blocks name their remedy
+- The repo-side pre-commit mirror is installed as `.potion/scripts/pre-commit.cjs`
+  — the `.js` crashed in repos whose package.json sets `"type": "module"`.
+  `install-repo-hooks.sh` removes the legacy file and replaces potion's own
+  old shim without `--force`; init, resume and update name the new path.
+- Declared-secret and oversize blocks now end with a `Remedy:` sentence. No
+  block condition or exit code changed.
+
+### Less noise, less ritual
+- `GRAMMAR DRIFT`, `DOC STALENESS` and the new `EVIDENCE STALENESS` notices
+  show at most once a day per repo, and never on clear or compact.
+- `/potion:discuss` and `/potion:plan` no longer suggest `/clear` at exit.
+  (Execute → verify keeps it until verify gets a fresh context of its own.)
+
+### New: doctor, metrics, evidence
+- `/potion:doctor` + `scripts/doctor.js`: read-only health check — install
+  record vs source version, hook registration, STATE caps and phase
+  resolution, grammar, repo mirror, expired grants and queue entries.
+- `scripts/metrics.js`: execute, verify and brew append one line per stage to
+  `.potion/metrics.jsonl` (never fails a stage; `merge=union`).
+- `/potion:evidence` + `scripts/field-evidence.js`: the field-evidence pass
+  as a command — per-repo artifact counts, skipped steps, metrics, and
+  optional transcript counts. Replayed transcript lines and double-logged
+  Stop blocks are skipped.
+
+### CI
+- The `bucket vocabulary` step had failed every run since 2026-08-07 on
+  legitimate references to the legacy section name; it now checks lowercase
+  use only.
+- New steps: syntax-check `scripts/*.js`, run every `scripts/*-test.sh`
+  (8 scripts, 97 cases).
+
+### Docs
+- README: sixteen skills, five hooks; skill and repo-layout lists updated.
+
 ## 1.16.0 — 2026-08-30
 
 Doc consolidation becomes a first-class lane. Distilled from a 13-doc manual
