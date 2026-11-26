@@ -6,6 +6,13 @@
 // Appends exactly one JSON line to .potion/metrics.jsonl. Never fails the
 // calling stage: any error prints `metrics: skipped (<reason>)` to stderr and
 // the process still exits 0.
+//
+//   node scripts/metrics.js report [--phase <NN-slug>] [--repo <path>]
+// Read-only. Prints what the phase used, summed from its metrics lines:
+// `USAGE <phase>` then one `  <label>: <value>` line each for plans, workers,
+// agents (when a brew line recorded --agents), waves, verify cycles,
+// respawns, gate stops and time. No lines for the phase → `USAGE <phase>`
+// and `  no metrics recorded`.
 
 const fs = require('fs');
 const path = require('path');
@@ -82,7 +89,7 @@ function deriveFromDisk(potionDir, phase) {
       const re = new RegExp('^' + name + ':\\s*(.+?)\\s*$');
       for (const l of lines) {
         const m = l.match(re);
-        if (m) return m[1].replace(/^["']|["']$/g, '');
+        if (m) return m[1].replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
       }
       return undefined;
     };
@@ -96,10 +103,77 @@ function deriveFromDisk(potionDir, phase) {
   return derived;
 }
 
+function num(v) {
+  return typeof v === 'number' && isFinite(v) ? v : 0;
+}
+
+// What a phase used, summed from its lines in metrics.jsonl.
+function report(potionDir, phase) {
+  const out = ['USAGE ' + (phase || '(phase not resolved)')];
+  let rows = [];
+  try {
+    rows = fs.readFileSync(path.join(potionDir, 'metrics.jsonl'), 'utf8')
+      .split(/\r?\n/)
+      .map((l) => { try { return JSON.parse(l); } catch (_) { return null; } })
+      .filter((r) => r && typeof r === 'object' && (!phase || r.phase === phase));
+  } catch (_) {
+    rows = [];
+  }
+  if (!rows.length) {
+    out.push('  no metrics recorded');
+    return out;
+  }
+  const of = (stage) => rows.filter((r) => r.stage === stage);
+  const sum = (list, key) => list.reduce((n, r) => n + num(r[key]), 0);
+  const exec = of('execute');
+  const verify = of('verify');
+  const brew = of('brew');
+  const last = rows[rows.length - 1];
+  const lastVerify = verify[verify.length - 1];
+  const lastBrew = brew[brew.length - 1];
+
+  if (last.plans !== undefined) {
+    // A runbook gets a SUMMARY too, so summaries are counted against plans
+    // plus runbooks (field run 2026-11-26 printed "6 of 5 complete").
+    const rb = num(last.runbooks);
+    out.push('  ' + (rb ? 'plans and runbooks' : 'plans') + ': ' + num(last.summaries) + ' of ' +
+      (num(last.plans) + rb) + ' complete' + (rb ? ' (' + rb + ' runbook' + (rb === 1 ? '' : 's') + ')' : ''));
+  }
+  out.push('  workers spawned: ' + sum(exec, 'workers'));
+  if (lastBrew && lastBrew.agents !== undefined) out.push('  agents spawned (all kinds): ' + sum(brew, 'agents'));
+  const width = exec.reduce((n, r) => Math.max(n, num(r.max_wave_width)), 0);
+  out.push('  waves: ' + sum(exec, 'waves') + (width ? ', widest ' + width : ''));
+  out.push('  verify cycles: ' + verify.length +
+    (lastVerify && lastVerify.verdict ? ', verdict ' + lastVerify.verdict : ''));
+  const overload = sum(exec, 'overload_respawns');
+  out.push('  respawns: ' + (sum(exec, 'respawns') + sum(brew, 'respawns')) +
+    (overload ? ' (plus ' + overload + ' after an overload)' : ''));
+  out.push('  gate stops: ' + (sum(exec, 'gate_stops') + sum(brew, 'gate_stops')));
+  const span = Math.round((Date.parse(last.ts) - Date.parse(rows[0].ts)) / 60000);
+  if (lastBrew && lastBrew.minutes !== undefined) {
+    out.push('  time: ' + sum(brew, 'minutes') + ' min in brew');
+  } else if (isFinite(span)) {
+    out.push('  time: ' + span + ' min from first to last recorded stage');
+  }
+  return out;
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
+  if (args.command === 'report') {
+    let repo = process.cwd();
+    let phase;
+    for (const [key, value] of args.flags) {
+      if (key === 'repo' && typeof value === 'string') repo = value;
+      if (key === 'phase' && typeof value === 'string') phase = value;
+    }
+    const potionDir = path.join(path.resolve(repo), '.potion');
+    if (!phase) phase = derivePhase(potionDir);
+    process.stdout.write(report(potionDir, phase).join('\n') + '\n');
+    return;
+  }
   if (args.command !== 'record') {
-    throw new Error('usage: metrics.js record --stage <stage> [--phase <NN-slug>] [--key value]...');
+    throw new Error('usage: metrics.js record --stage <stage> [--phase <NN-slug>] [--key value]... | metrics.js report [--phase <NN-slug>]');
   }
 
   let repo = process.cwd();

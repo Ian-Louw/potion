@@ -34,9 +34,9 @@ against this block; fix in place, or regenerate — at most once.
    CONFLICT/BADWAVE/MISSINGDEP/MALFORMED is a plan defect — stop and fix the
    plans (or run /potion:plan), never spawn around it; note the WAVE widths
    for the phase report. Within a wave, plans own disjoint `files_modified`
-   and `resources`. Spawn a wave's workers in one message, up to 6;
-   never more than 6 live — when a worker finishes and plans are still
-   waiting, start one more. Between waves, block. No polling, no
+   and `resources`. Per wave run `node ${CLAUDE_PLUGIN_ROOT}/scripts/mem-cap.js`: its CAP (1-6, from free memory) is the most workers live at once, and
+   its WORKER-RULE line, if any, goes in every digest. Spawn up to CAP in one message; when a worker finishes and plans
+   wait, start one more. Between waves, block. No polling, no
    runtime dependency analysis: the planner already did it. A wave with 2+
    plans gets one isolated worktree + temp branch per worker (repo root):
    `git worktree add ../{repo-dirname}-wt-{NN} -b potion/wave{W}-plan{NN}`

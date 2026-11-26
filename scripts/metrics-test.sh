@@ -121,6 +121,69 @@ else
   fail h-dated-phase-line-resolves-dir
 fi
 
+# (i) a cycle line with a trailing comment is recorded as the number alone
+R="$(new_repo i)"
+P="$R/.potion/phases/03-gamma"
+mkdir -p "$P"
+printf -- '---\nverdict: "gaps"\ncycle: 2                      # increments each verify pass\n---\n' > "$P/VERIFICATION.md"
+(cd "$R" && node "$SCRIPT" record --stage verify --phase 03-gamma --gaps 1 >/dev/null 2>&1)
+if check_last "$R" 'r.cycle === 2 && r.verdict === "gaps"'; then
+  pass i-cycle-comment-stripped
+else
+  fail i-cycle-comment-stripped
+fi
+
+# (j) report sums a phase's lines, ignores other phases, and writes nothing
+: > "$P/PLAN-01.md"; : > "$P/PLAN-02.md"; : > "$P/SUMMARY-01.md"; : > "$P/SUMMARY-02.md"
+(cd "$R" && node "$SCRIPT" record --stage execute --phase 03-gamma --workers 2 --waves 1 --max-wave-width 2 --respawns 1 --overload-respawns 1 --gate-stops 0 >/dev/null 2>&1)
+(cd "$R" && node "$SCRIPT" record --stage execute --phase 09-other --workers 50 >/dev/null 2>&1)
+printf -- '---\nverdict: "pass"\ncycle: 3\n---\n' > "$P/VERIFICATION.md"
+(cd "$R" && node "$SCRIPT" record --stage verify --phase 03-gamma --gaps 0 >/dev/null 2>&1)
+(cd "$R" && node "$SCRIPT" record --stage brew --phase 03-gamma --agents 5 --gate-stops 1 --respawns 0 --minutes 12 >/dev/null 2>&1)
+BEFORE="$(wc -c < "$R/.potion/metrics.jsonl")"
+OUT="$(cd "$R" && node "$SCRIPT" report --phase 03-gamma 2>&1)"; RC=$?
+AFTER="$(wc -c < "$R/.potion/metrics.jsonl")"
+if [ "$RC" -eq 0 ] && [ "$BEFORE" = "$AFTER" ] &&
+  echo "$OUT" | grep -qxF 'USAGE 03-gamma' &&
+  echo "$OUT" | grep -qxF '  plans: 2 of 2 complete' &&
+  echo "$OUT" | grep -qxF '  workers spawned: 2' &&
+  echo "$OUT" | grep -qxF '  agents spawned (all kinds): 5' &&
+  echo "$OUT" | grep -qxF '  waves: 1, widest 2' &&
+  echo "$OUT" | grep -qxF '  verify cycles: 2, verdict pass' &&
+  echo "$OUT" | grep -qxF '  respawns: 1 (plus 1 after an overload)' &&
+  echo "$OUT" | grep -qxF '  gate stops: 1' &&
+  echo "$OUT" | grep -qxF '  time: 12 min in brew'; then
+  pass j-report-sums-one-phase
+else
+  fail j-report-sums-one-phase
+  echo "$OUT"
+fi
+
+# (k) report with nothing recorded, and outside a potion repo, still exits 0
+OUT="$(cd "$R" && node "$SCRIPT" report --phase 77-none 2>&1)"; RC=$?
+OUT2="$(cd "$ROOT" && node "$SCRIPT" report 2>&1)"; RC2=$?
+if [ "$RC" -eq 0 ] && [ "$RC2" -eq 0 ] &&
+  echo "$OUT" | grep -qxF '  no metrics recorded' &&
+  echo "$OUT2" | grep -qxF '  no metrics recorded'; then
+  pass k-report-nothing-recorded
+else
+  fail k-report-nothing-recorded
+fi
+
+# (l) a runbook and its summary count on both sides (field run printed "6 of 5")
+R="$(new_repo l)"
+P="$R/.potion/phases/05-rb"
+mkdir -p "$P"
+: > "$P/PLAN-01.md"; : > "$P/RUNBOOK-02.md"; : > "$P/SUMMARY-01.md"; : > "$P/SUMMARY-02.md"
+(cd "$R" && node "$SCRIPT" record --stage execute --phase 05-rb --workers 1 >/dev/null 2>&1)
+OUT="$(cd "$R" && node "$SCRIPT" report --phase 05-rb 2>&1)"
+if echo "$OUT" | grep -qxF '  plans and runbooks: 2 of 2 complete (1 runbook)'; then
+  pass l-runbook-counted-both-sides
+else
+  fail l-runbook-counted-both-sides
+  echo "$OUT"
+fi
+
 if [ "$FAILS" -gt 0 ]; then
   echo "$FAILS FAIL"
   exit 1

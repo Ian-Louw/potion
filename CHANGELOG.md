@@ -4,6 +4,40 @@
 > dogfood). Commit hashes and evidence paths cited below refer to that repo's
 > history; this public repo carries one clean commit per release.
 
+## 1.19.2 — 2026-11-26
+
+A brew run now ends by saying what it used, and the first real field run's
+failures are fixed: it took seven starts to finish one phase.
+
+### Added
+- `scripts/metrics.js report` prints a phase's usage from its metrics lines:
+  plans complete, workers and agents spawned, waves and the widest one,
+  verify cycles and verdict, respawns, gate stops and time. Read-only.
+- `/potion:brew` records `--agents` (every subagent it spawned) and pastes
+  the report into its final phase report as **Usage**.
+- `scripts/mem-cap.js`: the most workers a wave may run at once, from free
+  memory (1 to 6: 1.5 GB kept in reserve, one worker per 1.25 GB above it).
+  `/potion:execute` runs it before each wave and passes its worker rule (one
+  test command at a time) on when memory is short. The fixed cap of six
+  counted agents, not memory: four workers each running a test suite took a
+  16 GB machine to 0.9 GB free and the run was killed.
+- `/potion:brew headless` for `claude -p` runs: every agent is spawned in the
+  foreground and the turn never ends before a verdict or a human gate. A
+  headless run ended itself after two and a half minutes when the driver
+  said it was "holding" for a worker.
+
+### Documented
+- README: a headless brew needs `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0`.
+  Found in the first real field run: print mode stopped the planner ten
+  minutes in, leaving two of its plans on disk uncommitted.
+
+### Fixed
+- `scripts/metrics.js` recorded `cycle` with the template's trailing comment
+  attached (`"1    # increments each verify pass"`); it now records the number.
+- The usage report counted a runbook's summary as complete but not the runbook
+  as planned, printing "plans: 6 of 5 complete". It now prints
+  "plans and runbooks: 6 of 6 complete (1 runbook)".
+
 ## 1.19.1 — 2026-11-25
 
 Closes what the 1.19.0 blind audit left open in the two new checkers.

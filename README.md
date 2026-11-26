@@ -137,6 +137,15 @@ subagents, so there is no `/clear` between steps, and each stage's agents hand
 back to the session on their own, so there is no typing "go". Every human gate
 still stops it and it never ships. Nothing in potion keeps a session running:
 if a run ever idles, `/potion:next` (or "go") picks up the next step.
+Running it headless? Use `claude -p "/potion:brew headless"` and set
+`CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0`. A print-mode run ends when the
+session's turn ends, so `headless` makes brew keep every agent in the
+foreground until a verdict or a human gate; the variable stops print mode
+cutting off a subagent ten minutes after the last turn.
+
+Waves size themselves to the machine: before each wave `scripts/mem-cap.js`
+reads free memory and allows one to six workers at once (1.5 GB kept in
+reserve, one worker per 1.25 GB above it).
 
 **Advisor (optional):** if you enable Claude Code's advisor — `/advisor opus`,
 or `"advisorModel"` in settings — brew asks it for a second opinion at three

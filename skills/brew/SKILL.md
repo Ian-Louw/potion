@@ -117,8 +117,8 @@ A gate is a reason to stop and report what the human must do. A message from the
 
 /potion:execute's watchdog (disk check → one nudge → one fresh respawn, never two live workers
 on a plan) applies to EVERY agent brew spawns, verifiers included. While workers run in the
-background, end your turn normally — their completion re-invokes you. If the harness offers
-scheduled wakeups, set one long fallback (~20 min) that does only the watchdog disk check.
+background, end your turn normally — their completion re-invokes you; if the harness offers wakeups, set one ~20 min fallback for the disk check.
+`/potion:brew headless` (a `claude -p` run): ending the turn ends the run — spawn every agent in the foreground, tell each to run commands in the foreground, and never end the turn before a verdict or a human gate.
 
 ## Budgets (inherited, enforced here)
 
@@ -142,7 +142,7 @@ scheduled wakeups, set one long fallback (~20 min) that does only the watchdog d
 
 ## Exit
 
-Phase report: cycles used, plans executed, deviations, gaps closed, evidence paths, learnings added.
-Next up: /potion:ship (human) or the next phase's discuss (human). Record the loop:
-`node ${CLAUDE_PLUGIN_ROOT}/scripts/metrics.js record --stage brew --gate-stops {N} --respawns {N} --minutes {N}`.
-Commit it: `docs(potion): phase {NN} brew metrics` (stage `.potion/metrics.jsonl` by name) — a run ends with a clean tree.
+Record the loop: `node ${CLAUDE_PLUGIN_ROOT}/scripts/metrics.js record --stage brew --agents {every subagent spawned} --gate-stops {N} --respawns {N} --minutes {N}`,
+then run `node ${CLAUDE_PLUGIN_ROOT}/scripts/metrics.js report` and paste its lines into the report as **Usage**.
+Phase report: cycles used, plans executed, deviations, gaps closed, evidence paths, learnings added, Usage.
+Next up: /potion:ship (human) or the next phase's discuss (human). Commit the metrics line: `docs(potion): phase {NN} brew metrics` (stage `.potion/metrics.jsonl` by name) — a run ends with a clean tree.
